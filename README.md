@@ -12,15 +12,15 @@ A GitHub template for creating and sharing vibe coding projects.
 <table align="center">
   <tr>
     <td align="center" width="33%">
-      <img src="./public/wetouch/wechat.jpg" alt="Cell 细胞微信二维码" width="180"><br>
+      <img src="./public/wetouch/wechat.jpg" alt="Cell 细胞微信二维码" width="200"><br>
       <p align="center">扫码加微信</p>
     </td>
     <td align="center" width="33%">
-      <img src="./public/wetouch/wechat-channels.jpg" alt="Cell 细胞微信视频号二维码" width="180"><br>
+      <img src="./public/wetouch/wechat-channels.jpg" alt="Cell 细胞微信视频号二维码" width="200"><br>
       <p align="center">视频号</p>
     </td>
     <td align="center" width="33%">
-      <img src="./public/wetouch/wechat-official.jpg" alt="Cell 细胞微信公众号二维码" width="180"><br>
+      <img src="./public/wetouch/wechat-official.jpg" alt="Cell 细胞微信公众号二维码" width="200"><br>
       <p align="center">公众号</p>
     </td>
   </tr>
@@ -31,11 +31,11 @@ A GitHub template for creating and sharing vibe coding projects.
 <table align="center">
   <tr>
     <td align="center" width="50%">
-      <img src="./public/sponsor/zfb.jpg" alt="支付宝二维码" width="180"><br>
+      <img src="./public/sponsor/zfb.jpg" alt="支付宝二维码" width="200"><br>
       <p align="center">支付宝</p>
     </td>
     <td align="center" width="50%">
-      <img src="./public/sponsor/wx.jpg" alt="微信赞赏二维码" width="180"><br>
+      <img src="./public/sponsor/wx.jpg" alt="微信赞赏二维码" width="200"><br>
       <p align="center">微信赞赏</p>
     </td>
   </tr>
