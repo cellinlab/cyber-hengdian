@@ -5,7 +5,7 @@ A GitHub template for creating and sharing vibe coding projects.
 
 👋 Hi，我是 Cell 细胞。可以扫码加我微信，备注 **Github** 就行。
 
-我正在做订阅制真人秀 **造物矩阵·BIP**：👉 [zwjz.flowus.cn](https://zwjz.flowus.cn)，欢迎订阅。
+我正在做订阅制真人秀 **造物矩阵·BIP**：👉 [zaowujuzhen.com](https://zaowujuzhen.com/about)，欢迎订阅。
 
 更多信息：👉 [Cell 的个人说明书](https://chaojizhizao.feishu.cn/wiki/Gbm8wMdS1itpk7kIVRlcN2WCnw)
 
