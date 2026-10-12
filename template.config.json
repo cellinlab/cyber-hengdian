@@ -1,0 +1,22 @@
+{
+  "stage": "template",
+  "owner": "cell",
+  "project": {
+    "name": "",
+    "summary": ""
+  },
+  "cell": {
+    "links": [
+      "https://cellinlab.com/",
+      "https://zaowujuzhen.com/about",
+      "https://x.com/cellinlab"
+    ],
+    "assets": {
+      "public/sponsor/wx.webp": "03f79919a98db33d080c28114947264232e84e0de18249f44ab26b2f44ba244b",
+      "public/sponsor/zfb.webp": "d7ef938724ced4763c4b492bb271d953633eab49289084202d9fdd384015ab21",
+      "public/wetouch/wechat-channels.webp": "1b6819635e44616a54192d3716228c72eaf23881bcea8c0cf6f36c85386d8ddb",
+      "public/wetouch/wechat-official.webp": "422d5a77f842b2066109abee3a25fbe614b50ee9c049b43bea3de084a7676588",
+      "public/wetouch/wechat.webp": "4d1cc21b565cfd883cc25c4b1468c26dc332b01e2a3dd0d9f949af53476ed158"
+    }
+  }
+}
