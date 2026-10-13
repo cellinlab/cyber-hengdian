@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "hengdian/1",
+  "id": "showcase-product",
+  "name": "静物肖像 · 香水广告预演",
+  "revision": 0,
+  "fps": "24",
+  "aspect": "16:9",
+  "environment": "studio",
+  "packVersion": "1.0.0",
+  "entities": [
+    {
+      "id": "hero-bottle",
+      "name": "香水瓶 · 主体",
+      "kind": "product",
+      "color": "#667c73",
+      "transform": {
+        "position": [
+          0,
+          0.8,
+          0
+        ],
+        "scale": [
+          1,
+          1.3,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "bottle-neck",
+      "name": "香水瓶 · 颈部",
+      "kind": "cylinder",
+      "color": "#c1af83",
+      "transform": {
+        "position": [
+          0,
+          1.8,
+          0
+        ],
+        "scale": [
+          0.24,
+          0.16,
+          0.24
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "bottle-cap",
+      "name": "香水瓶 · 瓶盖",
+      "kind": "cylinder",
+      "color": "#343f3b",
+      "transform": {
+        "position": [
+          0,
+          1.93,
+          0
+        ],
+        "scale": [
+          0.42,
+          0.2,
+          0.42
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "hero-plinth",
+      "name": "石色圆形展台",
+      "kind": "cylinder",
+      "color": "#c9c0ae",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1.7,
+          0.8,
+          1.7
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "low-plinth",
+      "name": "辅助矮展台",
+      "kind": "cylinder",
+      "color": "#bfc1b2",
+      "transform": {
+        "position": [
+          -1.8,
+          0,
+          -0.7
+        ],
+        "scale": [
+          1.1,
+          0.35,
+          1.1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "sculpture",
+      "name": "构图球体",
+      "kind": "sphere",
+      "color": "#d7c3a5",
+      "transform": {
+        "position": [
+          -1.8,
+          0.35,
+          -0.7
+        ],
+        "scale": [
+          0.55,
+          0.55,
+          0.55
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    }
+  ],
+  "shots": [
+    {
+      "id": "product-hero",
+      "name": "01 · 缓移看见轮廓",
+      "duration": 6,
+      "intent": "香水广告预演：完整保留瓶体与展台，摄影机由右向左缓慢推进，克制留白，辅助几何不遮挡主产品。",
+      "camera": {
+        "from": [
+          0.3,
+          1.85,
+          5.9
+        ],
+        "to": [
+          -0.5,
+          1.8,
+          5.5
+        ],
+        "target": [
+          0,
+          1.15,
+          0
+        ],
+        "targetEnd": [
+          0,
+          1.2,
+          0
+        ],
+        "fov": 32,
+        "follow": null
+      },
+      "tracks": {}
+    }
+  ],
+  "notes": []
+}

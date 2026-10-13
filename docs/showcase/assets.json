@@ -1,0 +1,60 @@
+{
+  "capturedAt": "2026-10-13",
+  "assets": [
+    {
+      "path": "public/readme/codex-camera-comparison.png",
+      "bytes": 104207,
+      "sha256": "532778cf88a66b06db2d825fa03e8beaa62f8d2939f01dd460078f3bf7a09400"
+    },
+    {
+      "path": "public/readme/codex-camera-iteration.jpg",
+      "bytes": 83662,
+      "sha256": "237beea271cbde0fc32f418264097c461a543c5f3d0ec81a94828f52f599cb81"
+    },
+    {
+      "path": "public/readme/director-camera.jpg",
+      "bytes": 71100,
+      "sha256": "c8c64cbdc4c4f6d68e61ef8b020f121d3781dafb3dc7e0c99cc17355274a8ee8"
+    },
+    {
+      "path": "public/readme/director-courtyard.jpg",
+      "bytes": 68794,
+      "sha256": "87f1e97f6fda0703dd2c532e731eae3f353ac002f58aedcf0241fc0e4c444a0e"
+    },
+    {
+      "path": "public/readme/module-overview.jpg",
+      "bytes": 145380,
+      "sha256": "b785d6735808c57a70f45b53a2e23d78daea91731603752c54648cf0703b3927"
+    },
+    {
+      "path": "public/readme/product-previs.png",
+      "bytes": 82165,
+      "sha256": "436c59a6a866b3b1784821fef18899cee78c77276e1edaa0557b47719a44eaa4"
+    },
+    {
+      "path": "public/readme/product-result.jpg",
+      "bytes": 100984,
+      "sha256": "b2086ff09f7b9b091b8d5b309f782c11e13d89e5e02d36a27ba6584feaec0ef8"
+    },
+    {
+      "path": "public/readme/road-previs.png",
+      "bytes": 302234,
+      "sha256": "d02c2b7272be6f447c799ca02b526d60f4f62ec9ff04bce614f6851a03b5085e"
+    },
+    {
+      "path": "public/readme/road-result.jpg",
+      "bytes": 219944,
+      "sha256": "844a726a8615095cf1c795bb1ed9ba167d048ff635aafd4145a405dd9b29be28"
+    },
+    {
+      "path": "public/readme/scene-examples.jpg",
+      "bytes": 82701,
+      "sha256": "7d9b08ae984136315f117851f51cebf22b55e1fdf6835fb1203e516325fb9d5e"
+    },
+    {
+      "path": "public/readme/tapnow-comparison.jpg",
+      "bytes": 147731,
+      "sha256": "82c64404135f108b80f8716c1a94ed240877c051e61a533bff4ba29d5ad34e1b"
+    }
+  ]
+}

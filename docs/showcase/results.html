@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>赛博横店 · TapNow 真实生成对照</title
+  ><style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f2f1e9;
+      color: #253025;
+      font-family: 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    }
+    main {
+      width: 1600px;
+      padding: 51px 56px 38px;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+    .top b {
+      font-weight: 600;
+    }
+    .tag {
+      background: #e1e6cf;
+      border-radius: 3px;
+      padding: 9px 13px;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    h1 {
+      font-size: 44px;
+      line-height: 1.4;
+      font-weight: 600;
+      letter-spacing: -1px;
+      margin: 25px 0 12px;
+    }
+    h1 span {
+      color: #7a8655;
+    }
+    .intro {
+      font-size: 17px;
+      color: #76816b;
+      margin: 0 0 30px;
+      line-height: 1.6;
+    }
+    .labels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+    .label {
+      border-top: 1px solid #c7cebb;
+      padding-top: 17px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .label b {
+      font-size: 17px;
+      font-weight: 500;
+    }
+    .label small {
+      font-size: 11px;
+      color: #899379;
+    }
+    .rowhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 23px 0 13px;
+    }
+    .rowhead h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .num {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #829163;
+      margin-right: 12px;
+    }
+    .rowhead p {
+      margin: 0;
+      font-size: 14px;
+      color: #718058;
+    }
+    .images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .image {
+      border: 1px solid #c3cdb4;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .image img {
+      display: block;
+      width: 100%;
+    }
+    .description {
+      font-size: 14px;
+      color: #6e775f;
+      line-height: 1.8;
+      padding: 13px 0 2px;
+    }
+    .warning {
+      color: #865b37;
+      background: #ebe4d4;
+      border-radius: 3px;
+      padding: 6px 11px;
+      font-size: 13px;
+    }
+    .foot {
+      margin-top: 27px;
+      border-top: 1px solid #cbd2bf;
+      padding-top: 19px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      line-height: 1.8;
+      color: #879079;
+    }
+    .foot strong {
+      font-weight: 500;
+      color: #62704d;
+      font-size: 13px;
+    }
+  </style>
+  <main>
+    <div class="top">
+      <b>赛博横店 / CYBER HENGDIAN</b><span class="tag">TAPNOW · REAL VIDEO TEST</span>
+    </div>
+    <h1>让预演，<span>成为生成视频的空间参考。</span></h1>
+    <p class="intro">
+      同一套片场决定，两次真实视频生成。画面质感可以重建，目标是否达成仍要逐项检查。
+    </p>
+    <div class="labels">
+      <div class="label"><b>输入 / Three.js 预演</b><small>6.00s · 720p · t=3.0s</small></div>
+      <div class="label">
+        <b>结果 / TapNow · Seedance 2.5</b><small>6.04s · 720p · t=3.0s</small>
+      </div>
+    </div>
+    <section>
+      <div class="rowhead">
+        <h2><span class="num">01</span>香水产品广告</h2>
+        <p>基础几何 → 玻璃瓶身与石材展台</p>
+      </div>
+      <div class="images">
+        <div class="image">
+          <img src="../../public/readme/product-previs.png" alt="香水广告三维预演3秒帧" />
+        </div>
+        <div class="image">
+          <img
+            src="../../public/readme/product-result.jpg"
+            alt="Seedance2.5香水广告真实生成视频3秒帧"
+          />
+        </div>
+      </div>
+      <div class="description">
+        瓶身、展台与球体的主要构图关系保留下来；材质、光影与表面细节得到转译。
+      </div>
+    </section>
+    <section>
+      <div class="rowhead">
+        <h2><span class="num">02</span>公路双人跟拍</h2>
+        <span class="warning">仍保留木偶造型，未达到真人目标</span>
+      </div>
+      <div class="images">
+        <div class="image">
+          <img src="../../public/readme/road-previs.png" alt="公路双人跟拍三维预演3秒帧" />
+        </div>
+        <div class="image">
+          <img
+            src="../../public/readme/road-result.jpg"
+            alt="Seedance2.5公路生成3秒帧，人物仍为木偶"
+          />
+        </div>
+      </div>
+      <div class="description">
+        道路、树木与远山变得细腻；双人布局和服装配色延续，但角色形态没有转为真人。
+      </div>
+    </section>
+    <div class="foot">
+      <strong>实际流程：赛博横店导出参考 MP4 → TapNow 网页提交 → 下载真实生成视频</strong
+      ><span>以上为两条输出在 3 秒处的静帧对照，不作为全程运镜或动作一致性的验收证明。</span>
+    </div>
+  </main>
+</html>

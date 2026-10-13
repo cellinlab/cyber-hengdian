@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>赛博横店 · 功能全景</title
+  ><style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f2f1e9;
+      color: #253025;
+      font-family: 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    }
+    main {
+      width: 1280px;
+      padding: 62px 72px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .eyebrow {
+      font-size: 15px;
+      letter-spacing: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .eyebrow b {
+      letter-spacing: 1px;
+    }
+    .version {
+      background: #e1e6cf;
+      padding: 8px 12px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      border-radius: 3px;
+    }
+    h1 {
+      font-size: 49px;
+      line-height: 1.3;
+      font-weight: 600;
+      letter-spacing: -2px;
+      margin: 29px 0 15px;
+    }
+    h1 span {
+      color: #78834e;
+    }
+    p {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.7;
+      color: #68715f;
+    }
+    .screen {
+      margin-top: 32px;
+      position: relative;
+      border: 1px solid #333c2d;
+      border-radius: 9px;
+      box-shadow: 0 19px 50px #3843231c;
+      overflow: hidden;
+    }
+    .screen img {
+      display: block;
+      width: 100%;
+    }
+    .pin {
+      position: absolute;
+      width: 29px;
+      height: 29px;
+      background: #dcef9e;
+      color: #24321d;
+      border: 2px solid #eff7d4;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 3px 8px #0006;
+    }
+    .caption {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #7e8578;
+      letter-spacing: 1px;
+      margin: 15px 1px 25px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid #ccd1c1;
+      border-bottom: 1px solid #ccd1c1;
+    }
+    .card {
+      padding: 23px 25px 23px 0;
+      min-height: 117px;
+    }
+    .card:nth-child(3n + 2),
+    .card:nth-child(3n + 3) {
+      border-left: 1px solid #d4d8cb;
+      padding-left: 25px;
+    }
+    .card:nth-child(-n + 3) {
+      border-bottom: 1px solid #d4d8cb;
+    }
+    .card h2 {
+      font-size: 20px;
+      margin: 0 0 10px;
+      font-weight: 600;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .card h2 i {
+      font-size: 11px;
+      font-weight: 500;
+      font-style: normal;
+      color: #788354;
+    }
+    .card p {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #65705e;
+    }
+    .foot {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .foot strong {
+      font-size: 17px;
+      line-height: 1.6;
+    }
+    .foot small {
+      font-size: 11px;
+      line-height: 1.7;
+      color: #87907e;
+    }
+    .steps {
+      display: flex;
+      flex: 1;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .step {
+      border: 1px solid #cbd2bc;
+      border-radius: 4px;
+      padding: 11px 16px;
+      font-size: 12px;
+    }
+    .arrow {
+      font-size: 17px;
+      color: #839168;
+    }
+  </style>
+  <main>
+    <div class="eyebrow">
+      <b>赛博横店 / CYBER HENGDIAN</b><span class="version">OPEN SOURCE · V0.1</span>
+    </div>
+    <h1>把一个想法，<span>变成可继续拍的片场。</span></h1>
+    <p>人和 AI 共用一份工程。搭场景、编排动作、调整镜头，再把拍摄决定带去下一站。</p>
+    <div class="screen">
+      <img src="../../public/readme/director-camera.jpg" alt="真实导演台截图" /><span
+        class="pin"
+        style="left: 14%; top: 20%"
+        >01</span
+      ><span class="pin" style="left: 48%; top: 12%">02</span
+      ><span class="pin" style="left: 88%; top: 20%">03</span
+      ><span class="pin" style="left: 46%; top: 84%">04</span
+      ><span class="pin" style="left: 80%; top: 2%">05</span
+      ><span class="pin" style="left: 97%; top: 2%">06</span>
+    </div>
+    <div class="caption">
+      <span>实际产品界面 ·《午后交接》· 本地工程 r3</span
+      ><span>THREE.JS 预演画面 / 非 AI 生成成片</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h2><i>01</i> 可复用的片场资源</h2>
+        <p>3 个内置片场、基础道具、GLB 模型<br />导入外部片场包，继续丰富自己的资源库。</p>
+      </div>
+      <div class="card">
+        <h2><i>02</i> 看得见的空间调度</h2>
+        <p>自由布置与摄影机视角随时切换<br />直接移动、旋转、缩放，检查画面遮挡。</p>
+      </div>
+      <div class="card">
+        <h2><i>03</i> 可以精调的摄影机</h2>
+        <p>编辑视角、起止机位、目标与跟拍<br />稳定对象身份，修改镜头保留已有动作。</p>
+      </div>
+      <div class="card">
+        <h2><i>04</i> 按镜头编排时间</h2>
+        <p>镜头序列、对象关键帧、时间批注<br />播放检查，所有动作按明确时间求值。</p>
+      </div>
+      <div class="card">
+        <h2><i>05</i> Agent 接着导演</h2>
+        <p>CLI / MCP / Skill 共用同一操作服务<br />真实 Codex CLI 已走通两轮自然语言导演。</p>
+      </div>
+      <div class="card">
+        <h2><i>06</i> 带走完整拍摄包</h2>
+        <p>工程、模型、MP4、关键帧、摄影机数据<br />可选深度 / ID 序列，导入后继续编辑。</p>
+      </div>
+    </div>
+    <div class="foot">
+      <div>
+        <strong>搭一次片场，让不同的人和 AI 接着拍。</strong><br /><small
+          >本地优先 · 开放工程 · 确定性逐帧输出</small
+        >
+      </div>
+      <div class="steps">
+        <span class="step">自然语言 / 手动操作</span><span class="arrow">→</span
+        ><span class="step">同一份可编辑工程</span><span class="arrow">→</span
+        ><span class="step">外部视频工具</span>
+      </div>
+    </div>
+  </main>
+</html>

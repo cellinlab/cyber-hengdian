@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>赛博横店 · 典型场景</title
+  ><style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f2f1e9;
+      color: #253025;
+      font-family: 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    }
+    main {
+      width: 1600px;
+      padding: 54px 56px 42px;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+    .top b {
+      font-weight: 600;
+    }
+    .tag {
+      background: #e1e6cf;
+      border-radius: 3px;
+      padding: 9px 13px;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    h1 {
+      font-size: 46px;
+      line-height: 1.4;
+      font-weight: 600;
+      letter-spacing: -1px;
+      margin: 27px 0 11px;
+    }
+    h1 span {
+      color: #7a8655;
+    }
+    .intro {
+      font-size: 18px;
+      color: #76816b;
+      margin: 0 0 31px;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .frame {
+      border: 1px solid #c4ccba;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+    .frame img {
+      display: block;
+      width: 100%;
+    }
+    .meta {
+      padding: 23px 1px 0;
+    }
+    .meta .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .meta h2 {
+      font-size: 26px;
+      line-height: 1.4;
+      margin: 0;
+      font-weight: 600;
+    }
+    .num {
+      font-family: Arial, sans-serif;
+      color: #859365;
+      font-size: 14px;
+      margin-right: 13px;
+    }
+    .stamp {
+      font-size: 11px;
+      color: #879078;
+      letter-spacing: 1px;
+    }
+    .meta p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #6d775f;
+      margin: 13px 0 0;
+    }
+    .foot {
+      margin-top: 33px;
+      border-top: 1px solid #cdd3c2;
+      padding-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #879078;
+    }
+    .foot strong {
+      font-weight: 500;
+      color: #64704e;
+      font-size: 14px;
+    }
+    .foot .note {
+      text-align: right;
+      line-height: 1.8;
+    }
+  </style>
+  <main>
+    <div class="top">
+      <b>赛博横店 / CYBER HENGDIAN</b><span class="tag">SCENE STUDIES · 02 CASES</span>
+    </div>
+    <h1>不同的故事，<span>从可控的片场开始。</span></h1>
+    <p class="intro">先验证构图、空间和运动，再把明确的拍摄决定交给视频生成工具。</p>
+    <div class="grid">
+      <section>
+        <div class="frame">
+          <img src="../../public/readme/product-previs.png" alt="香水产品广告真实预演帧" />
+        </div>
+        <div class="meta">
+          <div class="row">
+            <h2><span class="num">01</span>香水产品广告</h2>
+            <span class="stamp">STUDIO / 6s · 24 FPS</span>
+          </div>
+          <p>
+            用基础几何组合瓶身、瓶颈与瓶盖，搭出分层展台。<br />验证主体比例、构图与镜头路径，作为生成视频的空间参考。
+          </p>
+        </div>
+      </section>
+      <section>
+        <div class="frame">
+          <img src="../../public/readme/road-previs.png" alt="公路双人跟拍真实预演帧" />
+        </div>
+        <div class="meta">
+          <div class="row">
+            <h2><span class="num">02</span>公路双人跟拍</h2>
+            <span class="stamp">EXTERIOR / 6s · 24 FPS</span>
+          </div>
+          <p>
+            把角色、背包和道路放入同一空间，编排双人位置关系。<br />用真实关键帧检查跟拍构图，让角色调度和机位一起前进。
+          </p>
+        </div>
+      </section>
+    </div>
+    <div class="foot">
+      <strong>一套工程 → 参考 MP4 / 关键帧 / 摄影机数据 / 深度与 ID 通道</strong>
+      <div class="note">
+        两幅均为实际拍摄包第 72 帧（3.0s） · THREE.JS 预演<br />不是 TapNow
+        生成结果；视频生成属于导出后的外部交接。
+      </div>
+    </div>
+  </main>
+</html>

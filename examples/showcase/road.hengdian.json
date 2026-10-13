@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "hengdian/1",
+  "id": "showcase-road",
+  "name": "去远方 · 双人公路跟拍",
+  "revision": 0,
+  "fps": "24",
+  "aspect": "16:9",
+  "environment": "exterior",
+  "packVersion": "1.0.0",
+  "entities": [
+    {
+      "id": "traveler-a",
+      "name": "旅行者 A · 赭红外套",
+      "kind": "actor",
+      "color": "#b46545",
+      "transform": {
+        "position": [
+          -0.65,
+          0,
+          -2
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "traveler-b",
+      "name": "旅行者 B · 青色外套",
+      "kind": "actor",
+      "color": "#577d80",
+      "transform": {
+        "position": [
+          0.65,
+          0,
+          -2.9
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "pack-a",
+      "name": "旅行者 A · 背包",
+      "kind": "box",
+      "color": "#535b48",
+      "transform": {
+        "position": [
+          -0.65,
+          0.87,
+          -2.28
+        ],
+        "scale": [
+          0.4,
+          0.48,
+          0.23
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    },
+    {
+      "id": "pack-b",
+      "name": "旅行者 B · 背包",
+      "kind": "box",
+      "color": "#b4a378",
+      "transform": {
+        "position": [
+          0.65,
+          0.87,
+          -3.18
+        ],
+        "scale": [
+          0.4,
+          0.48,
+          0.23
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "locked": false
+    }
+  ],
+  "shots": [
+    {
+      "id": "road-follow",
+      "name": "01 · 与旅人同行",
+      "duration": 6,
+      "intent": "两位旅行者沿旷野公路并肩前行，A领先半步，摄影机与人物同速向前移动。全身保持可见，道路透视与远山交代旅程方向。",
+      "camera": {
+        "from": [
+          3.4,
+          2.2,
+          5
+        ],
+        "to": [
+          3.4,
+          2.2,
+          10
+        ],
+        "target": [
+          0,
+          1,
+          -2.4
+        ],
+        "targetEnd": [
+          0,
+          1,
+          2.6
+        ],
+        "fov": 36,
+        "follow": null
+      },
+      "tracks": {
+        "traveler-a": [
+          {
+            "position": [
+              -0.65,
+              0,
+              -2
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 0
+          },
+          {
+            "position": [
+              -0.65,
+              0,
+              3
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 6
+          }
+        ],
+        "traveler-b": [
+          {
+            "position": [
+              0.65,
+              0,
+              -2.9
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 0
+          },
+          {
+            "position": [
+              0.65,
+              0,
+              2.1
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 6
+          }
+        ],
+        "pack-a": [
+          {
+            "position": [
+              -0.65,
+              0.87,
+              -2.28
+            ],
+            "scale": [
+              0.4,
+              0.48,
+              0.23
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 0
+          },
+          {
+            "position": [
+              -0.65,
+              0.87,
+              2.72
+            ],
+            "scale": [
+              0.4,
+              0.48,
+              0.23
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 6
+          }
+        ],
+        "pack-b": [
+          {
+            "position": [
+              0.65,
+              0.87,
+              -3.18
+            ],
+            "scale": [
+              0.4,
+              0.48,
+              0.23
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 0
+          },
+          {
+            "position": [
+              0.65,
+              0.87,
+              1.8199999999999998
+            ],
+            "scale": [
+              0.4,
+              0.48,
+              0.23
+            ],
+            "rotation": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "time": 6
+          }
+        ]
+      }
+    }
+  ],
+  "notes": []
+}

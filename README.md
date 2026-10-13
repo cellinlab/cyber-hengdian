@@ -7,6 +7,8 @@
 
 当前是本地可运行的 0.1 基础版本。生成结果依赖后续选择的视频工具；本项目不把三维预演称为 AI 成片。
 
+![赛博横店功能全景：真实导演台与六个已实现模块](public/readme/module-overview.jpg)
+
 ## 开始拍摄
 
 需要 Node.js 22.12+。导出与 Agent 图片预览需要 Chromium / Chrome；视频导出还需要 FFmpeg。
@@ -47,6 +49,30 @@ npm run mcp
 ```
 
 MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接入配置见 [Agent 指南](docs/AGENTS.md)，工作流程见 [导演 Skill](.agents/skills/direct-hengdian/SKILL.md)。已有登录的 Codex CLI 可运行 `npm run codex:direct -- examples/codex-courtyard/01-stage.md`；这会调用真实模型并修改当前片场，实验请使用独立工作空间。两轮自然语言导演案例、运行方法和实测边界见 [Codex 接入](docs/CODEX.md)。DeepSeek Harness 仍须独立实测。
+
+![真实 Codex 导演：同一镜头调整前后的构图](public/readme/codex-camera-iteration.jpg)
+
+## 从典型场景开始
+
+![香水广告与公路电影：真实 Three.js 预演场景](public/readme/scene-examples.jpg)
+
+| 想拍什么 | 在导演台先确定什么 | 可复用案例 |
+| --- | --- | --- |
+| 庭院会面 · 10 秒三镜头 | 两人站位、来客走位、景别与剪辑节奏 | [真实 Codex 自然语言导演](docs/CODEX.md) |
+| 香水广告 · 6 秒单镜头 | 产品与展台关系、画面占比、侧移推进 | [打开场景工程](examples/showcase/product.hengdian.json) |
+| 公路电影 · 6 秒单镜头 | 双人间距、前进方向、同速后退跟拍 | [打开场景工程](examples/showcase/road.hengdian.json) |
+
+两个新场景是人工编排、可继续编辑的真实预演工程，均已完成 720p 视频及逐帧控制通道导出。导入方法、视频生成提示词和逐项验收点见 [场景指南](examples/showcase/README.md)。
+
+导出 `motion.mp4` 后，可将它交给支持视频参考的生成工具；由生成模型完成外观与材质转译。摄影机数据、深度和 ID 是否能参与控制，取决于下游工作流。本项目当前没有内置 TapNow 自动直连。真实交接限制与结果见 [TapNow 实测记录](docs/showcase/TAPNOW.md)。
+
+## 真实视频生成测试
+
+![真实预演到 TapNow 成片的对照，公路人物仍保留木偶造型](public/readme/tapnow-comparison.jpg)
+
+用同一套预演分别测试 TapNow / Seedance 2.5 视频参考模式。香水和公路各完成一次 720p、约 6 秒的生成，并下载原视频核验；庭院旧版 360p 输入被拒绝，已重导原生 720p 输入，本轮未自动重试。
+
+香水案例保留了产品、两个展台与球体的关系，转译出玻璃和石材质感，但推进幅度偏大，末帧展台下沿被裁切。公路案例保留了双人和服装关系，但人物仍是木偶，步态机械，**未达到真人自然行走目标**。完整记录与交接限制见 [TapNow 实测](docs/showcase/TAPNOW.md)，生成完成不代表每项导演意图都已满足。
 
 ## 建设自己的片场
 
