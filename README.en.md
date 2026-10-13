@@ -107,6 +107,13 @@ The column includes a dedicated community group for discussing AI video creation
 
 <a href="https://zaowujuzhen.com/r/RFAGZXABM"><img src="public/readme/ai-filmmaking-column.png" alt="AI filmmaking column: from zero to an independent short film" width="420"></a>
 
+## References and acknowledgements
+
+- [Emulsion](https://github.com/dennisonbertram/emulsion): collaborative agent directing and motion-reference handoff.
+- [Wonder Unit Shot Generator](https://wonderunit.com/shot-generator/): lightweight 3D staging for actors, cameras and storyboards.
+- [vibecoding-bip-template](https://github.com/cellinlab/vibecoding-bip-template): project scaffolding and Build in Public documentation.
+
+See [reference sources](docs/REFERENCES.md) for further reading.
 
 ## Author and license
 

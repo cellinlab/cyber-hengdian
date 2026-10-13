@@ -16,12 +16,12 @@
 
 ## 视觉约定
 
-- 首页仅使用一张真实渲染和一张真实 UI 截图。图片展示实际结果与操作面；说明由旁边的 Markdown 完成。
+- 首页使用完整工作台截图和部件操作截图。图片展示实际结果与操作面；说明由旁边的 Markdown 完成。
 - 不再嵌入此前的功能全景、比较海报或大段文字拼图。历史素材保留在仓库，不把图片删除当成 README 调整的一部分。
 - 真实渲染不叠加营销标题或参数表。UI 保留自然存在的控件文字，无额外编号和文字蒙版。
 - 图像需与交付版本一致，拍摄/导出/参考绑定是否完成由对应案例记录证明，图片本身不代替验证。
-- 不新增群二维码。模板原作者区与原有联系/赞助资产保持不变。
+- 学习与交流入口使用专栏卡片和可点击链接；模板原作者区与原有联系/赞助资产保持不变。
 
 ## 发布前核对
 
-图片路径为 `public/readme/truck-hero.png` 与 `public/readme/parts-director.png`。必须由真实运行提供。`docs/PARTS.md` 与 `examples/truck-parts/README.md` 对照实现和证据更新；README 不声称部件遮罩自动锁定生成模型的结构，也不声称外部生成平台已经接入。
+图片路径为 `public/readme/workstation-overview.png` 与 `public/readme/parts-director.png`。必须由真实运行提供。`docs/PARTS.md` 与 `examples/truck-parts/README.md` 对照实现和证据更新；README 不声称部件遮罩自动锁定生成模型的结构，也不声称外部生成平台已经接入。

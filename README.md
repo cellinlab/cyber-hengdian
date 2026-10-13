@@ -108,6 +108,13 @@ npm run test:e2e
 
 <a href="https://zaowujuzhen.com/r/RFAGZXABM"><img src="public/readme/ai-filmmaking-column.png" alt="AI 影视短片制作｜从零到独立成片专栏" width="420"></a>
 
+## 参考与致谢
+
+- [Emulsion](https://github.com/dennisonbertram/emulsion)：Agent 与创作者共同调度片场、导出运动参考的工作流。
+- [Wonder Unit Shot Generator](https://wonderunit.com/shot-generator/)：用轻量 3D 场景组织人物、摄影机与分镜。
+- [vibecoding-bip-template](https://github.com/cellinlab/vibecoding-bip-template)：项目模板与 Build in Public 文档组织。
+
+更多资料见 [参考来源](docs/REFERENCES.md)。
 <!-- bip:project:end -->
 
 <!-- bip:creator:start -->
