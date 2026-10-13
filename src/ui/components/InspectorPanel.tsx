@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import { Euler, Quaternion } from 'three';
 import { props } from '../../core/catalog';
 import type { Project, Entity, Shot, Key, Transform, Operation } from '../../core/schema';
@@ -5,6 +6,7 @@ import type { Set, InputRef, Command } from '../types';
 import { Icon } from '../Icons';
 import { Button, Field, Vector } from './Controls';
 import { pad } from '../format';
+import { ActorInspector } from './ActorInspector';
 
 type InspectorPanelProps = {
   project: Project;
@@ -42,18 +44,19 @@ export function InspectorPanel({
   setPlaying,
   editShot,
 }: InspectorPanelProps) {
+  const { t, catalogText } = useI18n();
   const rotation = sampled
     ? new Euler().setFromQuaternion(new Quaternion(...sampled.transform.rotation), 'XYZ')
     : null;
   return (
     <aside
       className={'inspector ' + (mobilePanel === 'inspect' ? 'mobile-open' : '')}
-      aria-label="检查器"
+      aria-label={t('检查器')}
     >
       <div className="inspector-head">
-        <span>{entity ? '对象属性' : '镜头设置'}</span>
+        <span>{entity ? t('对象属性') : t('镜头设置')}</span>
         {entity ? (
-          <Button icon="close" aria-label="取消选择对象" onClick={() => setSelection(null)} />
+          <Button icon="close" aria-label={t('取消选择对象')} onClick={() => setSelection(null)} />
         ) : (
           <Icon name="camera" />
         )}
@@ -67,23 +70,25 @@ export function InspectorPanel({
               </span>
               <div>
                 <strong>{entity.name}</strong>
-                <small>{entity.kind.toUpperCase()} / 场内对象</small>
+                <small>
+                  {entity.kind.toUpperCase()} {t('/ 场内对象')}
+                </small>
               </div>
             </div>
             <Field
-              label="对象名称"
+              label={t('对象名称')}
               value={entity.name}
               onCommit={(name) =>
                 void command(
                   [{ type: 'entity.update', id: entity.id, changes: { name } }],
-                  '命名对象',
+                  t('命名对象'),
                 )
               }
             />
             <label className="field">
-              <span>替换主体，保留镜头关系</span>
+              <span>{t('替换主体，保留镜头关系')}</span>
               <select
-                aria-label="替换对象类型"
+                aria-label={t('替换对象类型')}
                 disabled={busy}
                 value={entity.kind}
                 onChange={(e) => {
@@ -99,16 +104,17 @@ export function InspectorPanel({
                         changes: { kind: e.target.value as Entity['kind'], asset: null },
                       },
                     ],
-                    '替换主体',
+                    t('替换主体'),
                   );
                 }}
               >
+                {entity.kind === 'setpiece' && <option value="setpiece">{t('场景模型')}</option>}
                 {props.map((p) => (
                   <option key={p.kind} value={p.kind}>
-                    {p.name}
+                    {catalogText(p.name)}
                   </option>
                 ))}
-                <option value="glb">导入 GLB 模型…</option>
+                <option value="glb">{t('导入 GLB 模型…')}</option>
               </select>
             </label>
             {entity.kind === 'glb' && (
@@ -117,12 +123,12 @@ export function InspectorPanel({
                 icon="upload"
                 onClick={() => replaceModelRef.current?.click()}
               >
-                替换模型文件
+                {t('替换模型文件')}
               </Button>
             )}
             <div className="object-actions">
               <Button icon="copy" onClick={duplicate} disabled={busy}>
-                复制
+                {t('复制')}
               </Button>
               <Button
                 icon={entity.locked ? 'lock' : 'unlock'}
@@ -137,31 +143,42 @@ export function InspectorPanel({
                         changes: { locked: !entity.locked },
                       },
                     ],
-                    '锁定状态',
+                    t('锁定状态'),
                   )
                 }
               >
-                {entity.locked ? '已锁定' : '锁定'}
+                {entity.locked ? t('已锁定') : t('锁定')}
               </Button>
               <Button
                 icon="trash"
-                aria-label="删除对象"
+                aria-label={t('删除对象')}
                 disabled={busy}
-                onClick={() => void command([{ type: 'entity.remove', id: entity.id }], '删除对象')}
+                onClick={() =>
+                  void command([{ type: 'entity.remove', id: entity.id }], t('删除对象'))
+                }
               />
             </div>
+            {entity.kind === 'actor' && (
+              <ActorInspector
+                {...{ entity, sampled, project, shot, time, busy, command }}
+                onSeek={(value) => {
+                  setTime(value);
+                  setPlaying(false);
+                }}
+              />
+            )}
             <div className="section-heading">
-              <span>空间变换</span>
-              <span>{time > 0 || selectedKeys.length ? '镜头关键帧' : '基础姿态'}</span>
+              <span>{t('空间变换')}</span>
+              <span>{time > 0 || selectedKeys.length ? t('镜头关键帧') : t('基础姿态')}</span>
             </div>
             <Vector
-              label="位置"
+              label={t('位置')}
               value={sampled.transform.position}
               disabled={entity.locked || busy}
               onCommit={(position) => setTransform({ position })}
             />
             <Vector
-              label="旋转 °"
+              label={t('旋转 °')}
               value={[
                 (rotation!.x * 180) / Math.PI,
                 (rotation!.y * 180) / Math.PI,
@@ -182,16 +199,16 @@ export function InspectorPanel({
               }
             />
             <Vector
-              label="缩放"
+              label={t('缩放')}
               value={sampled.transform.scale}
               disabled={entity.locked || busy}
               onCommit={(scale) => setTransform({ scale })}
             />
             <label className="color-field">
-              <span>主体颜色</span>
+              <span>{t('主体颜色')}</span>
               <input
                 type="color"
-                aria-label="主体颜色"
+                aria-label={t('主体颜色')}
                 value={entity.color}
                 disabled={busy}
                 onChange={(e) =>
@@ -203,7 +220,7 @@ export function InspectorPanel({
                         changes: { color: e.target.value },
                       },
                     ],
-                    '修改颜色',
+                    t('修改颜色'),
                   )
                 }
               />
@@ -211,14 +228,14 @@ export function InspectorPanel({
             </label>
             <p className="helper">
               {entity.locked
-                ? '对象已锁定，解锁后可调整姿态。'
+                ? t('对象已锁定，解锁后可调整姿态。')
                 : time > 0 || selectedKeys.length
-                  ? '此时修改姿态会写入当前镜头关键帧。'
-                  : '零秒且没有轨道时，修改共享的基础姿态。'}
+                  ? t('此时修改姿态会写入当前镜头关键帧。')
+                  : t('零秒且没有轨道时，修改共享的基础姿态。')}
             </p>
             <div className="section-heading">
-              <span>当前镜头动作</span>
-              <span>{selectedKeys.length} 个关键帧</span>
+              <span>{t('当前镜头动作')}</span>
+              <span>{t('{count} 个关键帧', { count: selectedKeys.length })}</span>
             </div>
             <Button
               className="wide"
@@ -245,10 +262,10 @@ export function InspectorPanel({
                     ),
                   },
                 });
-                void command(ops, '设置关键帧');
+                void command(ops, t('设置关键帧'));
               }}
             >
-              在 {time.toFixed(2)} 秒设关键帧
+              {t('在 {time} 秒设关键帧', { time: time.toFixed(2) })}
             </Button>
             <div className="key-list">
               {selectedKeys.map((k) => (
@@ -264,7 +281,7 @@ export function InspectorPanel({
                   </button>
                   <Button
                     icon="trash"
-                    aria-label={`删除 ${k.time} 秒关键帧`}
+                    aria-label={t('删除 {p0} 秒关键帧', { p0: k.time })}
                     onClick={() =>
                       void command(
                         [
@@ -275,7 +292,7 @@ export function InspectorPanel({
                             time: k.time,
                           },
                         ],
-                        '删除关键帧',
+                        t('删除关键帧'),
                       )
                     }
                   />
@@ -285,31 +302,33 @@ export function InspectorPanel({
             {entity.kind === 'glb' && (
               <>
                 <Field
-                  label="资产来源"
+                  label={t('资产来源')}
                   value={entity.source ?? ''}
                   onCommit={(source) =>
                     void command(
                       [{ type: 'entity.update', id: entity.id, changes: { source } }],
-                      '填写资产来源',
+                      t('填写资产来源'),
                     )
                   }
                 />
                 <Field
-                  label="资产许可"
+                  label={t('资产许可')}
                   value={entity.license ?? ''}
                   onCommit={(license) =>
                     void command(
                       [{ type: 'entity.update', id: entity.id, changes: { license } }],
-                      '填写资产许可',
+                      t('填写资产许可'),
                     )
                   }
                 />
                 <p className="helper">
-                  来源：{entity.source || '未填写'}
+                  {t('来源：')}
+                  {entity.source || t('未填写')}
                   <br />
-                  许可：{entity.license || '未声明，请确认使用权限'}
+                  {t('许可：')}
+                  {entity.license || t('未声明，请确认使用权限')}
                   <br />
-                  保留模型原始材质。
+                  {t('保留模型原始材质。')}
                 </p>
               </>
             )}
@@ -320,10 +339,14 @@ export function InspectorPanel({
               SHOT <strong>{pad(project.shots.findIndex((s) => s.id === shot.id) + 1)}</strong>
               <span>{shot.duration.toFixed(1)} SEC</span>
             </div>
-            <Field label="镜头名称" value={shot.name} onCommit={(name) => editShot({ name })} />
+            <Field
+              label={t('镜头名称')}
+              value={shot.name}
+              onCommit={(name) => editShot({ name })}
+            />
             <div className="field-pair">
               <Field
-                label="时长 / 秒"
+                label={t('时长 / 秒')}
                 value={shot.duration}
                 type="number"
                 min={0.5}
@@ -332,7 +355,7 @@ export function InspectorPanel({
                 onCommit={(v) => editShot({ duration: Number(v) })}
               />
               <Field
-                label="视角 / FOV"
+                label={t('视角 / FOV')}
                 value={shot.camera.fov}
                 type="number"
                 min={10}
@@ -341,15 +364,15 @@ export function InspectorPanel({
               />
             </div>
             <label className="field">
-              <span>跟随主体</span>
+              <span>{t('跟随主体')}</span>
               <select
-                aria-label="跟随主体"
+                aria-label={t('跟随主体')}
                 value={shot.camera.follow ?? ''}
                 onChange={(e) =>
                   editShot({ camera: { ...shot.camera, follow: e.target.value || null } })
                 }
               >
-                <option value="">固定观察目标</option>
+                <option value="">{t('固定观察目标')}</option>
                 {project.entities.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.name}
@@ -358,52 +381,54 @@ export function InspectorPanel({
               </select>
             </label>
             <div className="section-heading">
-              <span>摄影机路径</span>
-              <span>米 / XYZ</span>
+              <span>{t('摄影机路径')}</span>
+              <span>{t('米 / XYZ')}</span>
             </div>
             <Vector
-              label="起点"
+              label={t('起点')}
               value={shot.camera.from}
               onCommit={(from) => editShot({ camera: { ...shot.camera, from } })}
             />
             <Vector
-              label="终点"
+              label={t('终点')}
               value={shot.camera.to}
               onCommit={(to) => editShot({ camera: { ...shot.camera, to } })}
             />
             {!shot.camera.follow && (
               <>
                 <Vector
-                  label="起始目标"
+                  label={t('起始目标')}
                   value={shot.camera.target}
                   onCommit={(target) => editShot({ camera: { ...shot.camera, target } })}
                 />
                 <Vector
-                  label="结束目标"
+                  label={t('结束目标')}
                   value={shot.camera.targetEnd}
                   onCommit={(targetEnd) => editShot({ camera: { ...shot.camera, targetEnd } })}
                 />
               </>
             )}
             <Field
-              label="拍摄意图"
+              label={t('拍摄意图')}
               value={shot.intent}
               onCommit={(intent) => editShot({ intent })}
             />
-            <p className="helper">在自由布置中找到构图，点击画面里的「将此视角设为镜头起点」。</p>
+            <p className="helper">
+              {t('在自由布置中找到构图，点击画面里的「将此视角设为镜头起点」。')}
+            </p>
             <Button
               className="wide subtle-danger"
               icon="trash"
               disabled={project.shots.length <= 1 || busy}
-              onClick={() => void command([{ type: 'shot.remove', id: shot.id }], '删除镜头')}
+              onClick={() => void command([{ type: 'shot.remove', id: shot.id }], t('删除镜头'))}
             >
-              删除此镜头
+              {t('删除此镜头')}
             </Button>
           </>
         )}
       </div>
       <div className="inspector-footer">
-        <span className="live-dot" /> 所有修改写入同一工程
+        <span className="live-dot" /> {t('所有修改写入同一工程')}
       </div>
     </aside>
   );

@@ -228,3 +228,9 @@
   font-size: 8px;
   margin-top: 5px;
 }
+.key-marker.pose-marker {
+  top: 12px;
+  background: #d7b080;
+  width: 6px;
+  height: 6px;
+}

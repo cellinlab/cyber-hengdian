@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { evaluate } from '../core/project';
 import { walkSwing } from './locomotion';
+import { createActor, updateActor } from './actor';
+import { createSetpiece } from './setpieces';
 import type { Project, Shot, Entity } from '../core/schema';
 export type Pass = 'rgb' | 'depth' | 'id';
 const material = (color: string) => new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
@@ -97,7 +99,7 @@ function architecture(environment: Project['environment']) {
       panel.rotation.y = x < 0 ? 0.4 : -0.4;
       g.add(panel);
     }
-  } else {
+  } else if (environment === 'exterior') {
     g.add(box(150, 0.2, 150, '#a4aa87', 0, -0.14, 0), box(5, 0.025, 120, '#a89e88', 0, -0.02, 0));
     for (let i = 0; i < 13; i++) {
       const x = (i % 2 ? 1 : -1) * (8 + ((i * 7) % 19)),
@@ -108,9 +110,12 @@ function architecture(environment: Project['environment']) {
       g.add(tree((i % 2 ? 1 : -1) * (4 + (i % 3)), i * 4 - 14, 0.8 + (i % 3) * 0.2));
     for (let i = 0; i < 13; i++) g.add(box(0.07, 0.01, 1, '#ddd2b6', 0, 0, i * 3 - 20));
   }
+  if (environment === 'empty') g.add(box(180, 0.1, 180, '#b9b6a8', 0, -0.07, 0));
   return g;
 }
 export function primitive(e: Entity) {
+  if (e.kind === 'actor' && e.actor) return createActor(e.color);
+  if (e.kind === 'setpiece' && e.modelId) return createSetpiece(e.modelId, e.color);
   const g = new THREE.Group();
   const c = e.color;
   if (e.kind === 'actor') {
@@ -240,6 +245,7 @@ export class Stage {
       g.position.fromArray(e.transform.position);
       g.quaternion.fromArray(e.transform.rotation);
       g.scale.fromArray(e.transform.scale);
+      if (e.actor) updateActor(g, e.actor.pose);
       const limbs = g.userData.limbs as THREE.Group[] | undefined;
       const keys = shot.tracks[e.id] ?? [];
       const swing = walkSwing(keys, state.time);

@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import type { Project, Entity, Shot, Key } from '../../core/schema';
 import type { Set, Modal } from '../types';
 import { Icon } from '../Icons';
@@ -32,21 +33,25 @@ export function Timeline({
   selectedKeys,
   thumbnails,
 }: TimelineProps) {
+  const { t, catalogText } = useI18n();
   const total = project.shots.reduce((n, s) => n + s.duration, 0);
   return (
-    <section className="timeline" aria-label="镜头时间轴">
+    <section className="timeline" aria-label={t('镜头时间轴')}>
       <div className="timeline-top">
         <div className="timeline-title">
           <Icon name="film" />
-          <strong>镜头序列</strong>
+          <strong>{t('镜头序列')}</strong>
           <span>
-            {project.shots.length} 镜头 · {total.toFixed(1)} 秒
+            {t('{count} 镜头 · {duration} 秒', {
+              count: project.shots.length,
+              duration: total.toFixed(1),
+            })}
           </span>
         </div>
         <div className="transport">
           <Button
             icon={playing ? 'pause' : 'play'}
-            aria-label={playing ? '暂停播放' : '播放镜头'}
+            aria-label={playing ? t('暂停播放') : t('播放镜头')}
             className="play-button"
             onClick={() => {
               if (time >= shot.duration) setTime(0);
@@ -57,7 +62,7 @@ export function Timeline({
           <span>/ {clock(shot.duration, project.fps)}</span>
         </div>
         <Button icon="plus" onClick={() => setModal('recipes')}>
-          添加镜头
+          {t('添加镜头')}
         </Button>
       </div>
       <div className="timeline-content">
@@ -77,7 +82,11 @@ export function Timeline({
                 }
               >
                 {thumbnails[s.id] ? (
-                  <img src={thumbnails[s.id]} alt={`${s.name} 起始帧`} draggable={false} />
+                  <img
+                    src={thumbnails[s.id]}
+                    alt={t('{p0} 起始帧', { p0: s.name })}
+                    draggable={false}
+                  />
                 ) : (
                   <Icon name="camera" size={25} />
                 )}
@@ -88,21 +97,21 @@ export function Timeline({
                 <strong>{s.name}</strong>
                 <span>
                   {s.camera.follow
-                    ? '跟随镜头'
+                    ? t('跟随镜头')
                     : s.camera.from.every((v, j) => v === s.camera.to[j])
-                      ? '固定机位'
-                      : '运动镜头'}
+                      ? t('固定机位')
+                      : t('运动镜头')}
                 </span>
               </div>
             </button>
           ))}
           <button
             className="add-shot-card"
-            aria-label="添加镜头配方"
+            aria-label={t('添加镜头配方')}
             onClick={() => setModal('recipes')}
           >
             <Icon name="plus" size={22} />
-            <span>下一个镜头</span>
+            <span>{t('下一个镜头')}</span>
           </button>
         </div>
         <div className="scrubber">
@@ -120,16 +129,29 @@ export function Timeline({
                 className="key-marker"
                 key={k.time}
                 style={{ left: `${(k.time / shot.duration) * 100}%` }}
-                title={`${k.time.toFixed(2)} 秒关键帧`}
-                aria-label={`跳到 ${k.time} 秒关键帧`}
+                title={t('{p0} 秒关键帧', { p0: k.time.toFixed(2) })}
+                aria-label={t('跳到 {p0} 秒关键帧', { p0: k.time })}
                 onClick={() => {
                   setTime(k.time);
                   setPlaying(false);
                 }}
               />
             ))}
+            {(entity ? (shot.poseTracks?.[entity.id] ?? []) : []).map((key) => (
+              <button
+                className="key-marker pose-marker"
+                key={'pose-' + key.time}
+                style={{ left: `${(key.time / shot.duration) * 100}%` }}
+                title={t('跳到 {time} 秒姿态关键帧', { time: key.time })}
+                aria-label={t('跳到 {time} 秒姿态关键帧', { time: key.time })}
+                onClick={() => {
+                  setTime(key.time);
+                  setPlaying(false);
+                }}
+              />
+            ))}
             <input
-              aria-label="镜头时间"
+              aria-label={t('镜头时间')}
               type="range"
               min={0}
               max={shot.duration}
@@ -142,7 +164,9 @@ export function Timeline({
             />
           </div>
           <div className="timeline-hint">
-            <span>{entity ? entity.name + ' · 关键帧轨道' : '选择一个对象，编排它的动作'}</span>
+            <span>
+              {entity ? entity.name + t(' · 关键帧轨道') : t('选择一个对象，编排它的动作')}
+            </span>
             <span>
               {project.fps} FPS · {project.aspect}
             </span>

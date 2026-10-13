@@ -1,3 +1,4 @@
+import { actorSchema } from './actor';
 import { identity, uid, type Project, type Entity, type Shot, type Vec3 } from './schema';
 export const packs = [
   {
@@ -121,6 +122,7 @@ export function newEntity(kind: Entity['kind'], position: Vec3 = [0, 0, 0]): Ent
     color: preset?.color ?? '#bcbcbc',
     transform: identity(position),
     locked: false,
+    ...(kind === 'actor' ? { actor: actorSchema.parse({}) } : {}),
   };
 }
 export function newShot(recipeId = 'wide', target: Vec3 = [0, 0, 0]): Shot {
@@ -168,18 +170,20 @@ export function createProject(environment: Project['environment'] = 'courtyard')
     schemaVersion: 'hengdian/1',
     id: uid(),
     name:
-      environment === 'studio'
-        ? '一件物品的肖像'
-        : environment === 'exterior'
-          ? '去远方的路上'
-          : '午后的一次相遇',
+      environment === 'empty'
+        ? '空白片场'
+        : environment === 'studio'
+          ? '一件物品的肖像'
+          : environment === 'exterior'
+            ? '去远方的路上'
+            : '午后的一次相遇',
     revision: 0,
     fps: '24',
     aspect: '16:9',
     environment,
     packVersion: '1.0.0',
-    entities,
-    shots,
+    entities: environment === 'empty' ? [] : entities,
+    shots: environment === 'empty' ? [newShot('wide')] : shots,
     notes: [],
   };
 }

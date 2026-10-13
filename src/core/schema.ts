@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { actorSchema, poseKeySchema } from './actor';
+import { modelIds } from './model-ids';
+export const environmentSchema = z.enum(['courtyard', 'studio', 'exterior', 'empty']);
 const finite = z.number().finite();
 export const vec3 = z.tuple([finite, finite, finite]);
 export const quat = z
@@ -32,10 +35,13 @@ export const entitySchema = z
       'table',
       'product',
       'glb',
+      'setpiece',
     ]),
     color: z.string().regex(/^#[\da-fA-F]{6}$/),
     transform: transformSchema,
     locked: z.boolean(),
+    actor: actorSchema.optional(),
+    modelId: z.enum(modelIds).optional(),
     asset: z
       .string()
       .regex(/^[a-f0-9]{64}\.glb$/)
@@ -44,7 +50,10 @@ export const entitySchema = z
     license: z.string().max(160).optional(),
   })
   .strict()
-  .refine((e) => e.kind !== 'glb' || !!e.asset, 'GLB requires an asset');
+  .refine((e) => e.kind !== 'glb' || !!e.asset, 'GLB requires an asset')
+  .refine((e) => e.kind !== 'setpiece' || !!e.modelId, 'Setpiece requires a modelId')
+  .refine((e) => !e.modelId || e.kind === 'setpiece', 'modelId is only valid for setpieces')
+  .refine((e) => !e.actor || e.kind === 'actor', 'Actor rig is only valid for actors');
 export const keySchema = transformSchema.extend({ time: finite.min(0).max(120) }).strict();
 export const cameraSchema = z
   .object({
@@ -64,6 +73,7 @@ export const shotSchema = z
     camera: cameraSchema,
     tracks: z.record(z.string(), z.array(keySchema).max(200)),
     intent: z.string().max(2000),
+    poseTracks: z.record(z.string(), z.array(poseKeySchema).max(200)).optional(),
   })
   .strict();
 export const noteSchema = z
@@ -83,7 +93,7 @@ export const projectSchema = z
     revision: z.number().int().nonnegative(),
     fps: z.enum(['24', '30', '60']),
     aspect: z.enum(['16:9', '9:16', '1:1']),
-    environment: z.enum(['courtyard', 'studio', 'exterior']),
+    environment: environmentSchema,
     packVersion: z.literal('1.0.0'),
     resourcePack: z
       .object({ id: z.string(), version: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/) })
@@ -106,6 +116,12 @@ export const projectSchema = z
       fail('Duplicate IDs');
     for (const s of p.shots) {
       if (s.camera.follow && !ids.has(s.camera.follow)) fail('Unknown camera target');
+      for (const [entity, keys] of Object.entries(s.poseTracks ?? {})) {
+        const target = p.entities.find((e) => e.id === entity);
+        if (!target?.actor || target.kind !== 'actor') fail('Pose track requires a rigged actor');
+        if (keys.some((k, i) => k.time > s.duration || (i > 0 && k.time <= keys[i - 1].time)))
+          fail('Pose keys must be sorted, unique and within shot');
+      }
       for (const [entity, keys] of Object.entries(s.tracks)) {
         if (!ids.has(entity)) fail('Unknown track target');
         if (keys.some((k, i) => k.time > s.duration || (i > 0 && k.time <= keys[i - 1].time)))
@@ -134,7 +150,18 @@ export const operationSchema = z.discriminatedUnion('type', [
     changes: z
       .object({
         kind: z
-          .enum(['actor', 'box', 'sphere', 'cylinder', 'plant', 'chair', 'table', 'product', 'glb'])
+          .enum([
+            'actor',
+            'box',
+            'sphere',
+            'cylinder',
+            'plant',
+            'chair',
+            'table',
+            'product',
+            'glb',
+            'setpiece',
+          ])
           .optional(),
         asset: z
           .string()
@@ -150,6 +177,8 @@ export const operationSchema = z.discriminatedUnion('type', [
           .optional(),
         transform: transformSchema.optional(),
         locked: z.boolean().optional(),
+        actor: actorSchema.nullable().optional(),
+        modelId: z.enum(modelIds).nullable().optional(),
       })
       .strict(),
   }),
@@ -158,11 +187,13 @@ export const operationSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('shot.update'),
     id,
-    changes: shotSchema.omit({ id: true, tracks: true }).partial().strict(),
+    changes: shotSchema.omit({ id: true, tracks: true, poseTracks: true }).partial().strict(),
   }),
   z.object({ type: z.literal('shot.remove'), id }),
   z.object({ type: z.literal('key.set'), shotId: id, entityId: id, key: keySchema }),
   z.object({ type: z.literal('key.remove'), shotId: id, entityId: id, time: finite }),
+  z.object({ type: z.literal('pose.set'), shotId: id, entityId: id, key: poseKeySchema }),
+  z.object({ type: z.literal('pose.remove'), shotId: id, entityId: id, time: finite }),
   z.object({ type: z.literal('note.add'), note: noteSchema }),
   z.object({ type: z.literal('note.remove'), id }),
 ]);

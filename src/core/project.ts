@@ -1,3 +1,4 @@
+import { sampleActor } from './actor';
 import {
   projectSchema,
   transactionSchema,
@@ -40,9 +41,21 @@ export function applyTransaction(project: Project, input: Transaction): Project 
         break;
       case 'entity.update': {
         const e = entity(op.id);
-        if (e.locked && op.changes.transform) throw Error('对象已锁定');
+        if (
+          e.locked &&
+          (op.changes.transform ||
+            op.changes.actor !== undefined ||
+            op.changes.kind ||
+            op.changes.modelId !== undefined)
+        )
+          throw Error('对象已锁定');
         Object.assign(e, op.changes);
         if (op.changes.asset === null || e.kind !== 'glb') delete e.asset;
+        if (op.changes.modelId === null || e.kind !== 'setpiece') delete e.modelId;
+        if (op.changes.actor === null || e.kind !== 'actor') {
+          delete e.actor;
+          for (const s of p.shots) if (s.poseTracks) delete s.poseTracks[e.id];
+        }
         break;
       }
       case 'entity.remove':
@@ -51,6 +64,7 @@ export function applyTransaction(project: Project, input: Transaction): Project 
         for (const s of p.shots) {
           if (s.camera.follow === op.id) s.camera.follow = null;
           delete s.tracks[op.id];
+          if (s.poseTracks) delete s.poseTracks[op.id];
         }
         p.notes = p.notes.map((n) => (n.entityId === op.id ? { ...n, entityId: null } : n));
         break;
@@ -76,9 +90,30 @@ export function applyTransaction(project: Project, input: Transaction): Project 
         break;
       }
       case 'key.remove': {
-        entity(op.entityId);
+        if (entity(op.entityId).locked) throw Error('对象已锁定');
         const s = shot(op.shotId);
         s.tracks[op.entityId] = (s.tracks[op.entityId] ?? []).filter((k) => k.time !== op.time);
+        break;
+      }
+      case 'pose.set': {
+        const e = entity(op.entityId);
+        if (e.locked) throw Error('对象已锁定');
+        if (!e.actor || e.kind !== 'actor') throw Error('Pose track requires a rigged actor');
+        const s = shot(op.shotId);
+        s.poseTracks ??= {};
+        s.poseTracks[e.id] = [
+          ...(s.poseTracks[e.id] ?? []).filter((k) => Math.abs(k.time - op.key.time) > 0.00001),
+          op.key,
+        ].sort((a, b) => a.time - b.time);
+        break;
+      }
+      case 'pose.remove': {
+        if (entity(op.entityId).locked) throw Error('对象已锁定');
+        const s = shot(op.shotId);
+        if (s.poseTracks)
+          s.poseTracks[op.entityId] = (s.poseTracks[op.entityId] ?? []).filter(
+            (k) => k.time !== op.time,
+          );
         break;
       }
       case 'note.add':
@@ -138,6 +173,9 @@ export function evaluate(project: Project, shot: Shot, time: number) {
   const entities = project.entities.map((e) => ({
     ...e,
     transform: sampleTransform(e.transform, shot.tracks[e.id] ?? [], t),
+    ...(e.actor
+      ? { actor: { ...e.actor, pose: sampleActor(e.actor, t, shot.poseTracks?.[e.id]) } }
+      : {}),
   }));
   const followed = entities.find((e) => e.id === shot.camera.follow);
   const target = followed

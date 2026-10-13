@@ -58,6 +58,10 @@ const common = [
   'mcp_servers.hengdian.tools.apply_operations.approval_mode="approve"',
   '-c',
   'mcp_servers.hengdian.tools.create_export.approval_mode="approve"',
+  '-c',
+  'mcp_servers.hengdian.tools.use_scene_template.approval_mode="approve"',
+  '-c',
+  'mcp_servers.hengdian.tools.add_assembly.approval_mode="approve"',
   '-o',
   resolve(runDir, 'final.md'),
 ];
@@ -77,7 +81,7 @@ const run = {
 await writeFile(resolve(runDir, 'run.json'), JSON.stringify(run, null, 2));
 console.log(`Codex evidence: ${runDir}`);
 console.log(
-  'This directing run authorizes apply_operations and create_export only on the displayed local service; shell remains read-only.',
+  'This directing run authorizes scene templates, assemblies, apply_operations and create_export only on the displayed local service; shell remains read-only.',
 );
 const child = spawn(process.env.CODEX_BIN ?? 'codex', command, {
   cwd: root,

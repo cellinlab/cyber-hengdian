@@ -1,0 +1,1295 @@
+{
+  "schemaVersion": "hengdian/1",
+  "id": "b72e14e9-763a-46a5-a256-d443e27cacaf",
+  "name": "窗边教室",
+  "revision": 5,
+  "fps": "24",
+  "aspect": "16:9",
+  "environment": "empty",
+  "packVersion": "1.0.0",
+  "entities": [
+    {
+      "id": "c96a056b-352c-4e7d-b74d-f5847ef9ca1f",
+      "name": "地板底座",
+      "kind": "setpiece",
+      "color": "#c3b596",
+      "transform": {
+        "position": [
+          0,
+          -0.1,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "floor-slab",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "1237f81b-3f90-41dc-a096-d4444cd0ebf1",
+      "name": "墙板",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          -4.5,
+          0,
+          -5.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "wall-panel",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "74bb436b-d6ce-4420-a0ba-596428f1e15a",
+      "name": "墙板",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          -1.5,
+          0,
+          -5.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "wall-panel",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "0d320e0f-3219-48a4-b811-42d507c11cfb",
+      "name": "墙板",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          1.5,
+          0,
+          -5.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "wall-panel",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "e9b959e9-22db-4252-b940-8e30c015fab9",
+      "name": "门洞墙",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          4.5,
+          0,
+          -5.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "doorway",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "5b93e842-156d-4f73-a894-5d4943df1f17",
+      "name": "开窗墙",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          -6,
+          0,
+          -4
+        ],
+        "rotation": [
+          0,
+          0.7071067811865475,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "window-wall",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "7cf30a37-4fc5-4278-aa16-740748f25f57",
+      "name": "开窗墙",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          -6,
+          0,
+          -1
+        ],
+        "rotation": [
+          0,
+          0.7071067811865475,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "window-wall",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "31e09867-1d93-4c38-b435-9626eda82407",
+      "name": "开窗墙",
+      "kind": "setpiece",
+      "color": "#d8d2c2",
+      "transform": {
+        "position": [
+          -6,
+          0,
+          2
+        ],
+        "rotation": [
+          0,
+          0.7071067811865475,
+          0,
+          0.7071067811865476
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "window-wall",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "f16cf765-63ea-4ec8-aaca-377d0e67578d",
+      "name": "黑板",
+      "kind": "setpiece",
+      "color": "#3f6059",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -5
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "blackboard",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "6a75d3b9-db31-48fc-8d09-54d538e6c85a",
+      "name": "书柜",
+      "kind": "setpiece",
+      "color": "#ad9472",
+      "transform": {
+        "position": [
+          5,
+          0,
+          -4.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "bookshelf",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "83941d33-259b-4bbb-8b76-5e760f93d41d",
+      "name": "教师讲台",
+      "kind": "setpiece",
+      "color": "#ac9473",
+      "transform": {
+        "position": [
+          -3.5,
+          0,
+          -3.8
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "reception",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "f3cfb6da-fc7f-4cf5-9a91-d77e28fb0d09",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          2.4,
+          0,
+          -1.7999999999999998
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "0683b747-d185-42a3-b046-b42988506eed",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          1.2,
+          0,
+          -1.7999999999999998
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "3c8756cc-b269-47af-b40e-b11cffff0df2",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          -1.2,
+          0,
+          -1.8000000000000003
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "14c7bba8-be90-4f6c-9527-053d0a4c1f52",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          -2.4,
+          0,
+          -1.8000000000000003
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "7d1cc760-6940-4ce2-bcf2-e33761634efc",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          2.4,
+          0,
+          2.9391523179536476e-16
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "b6e15196-cd64-4e0f-9bda-047205eb163a",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          1.2,
+          0,
+          1.4695761589768238e-16
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "7dfcd4e9-8b07-448c-958f-d8431ced29db",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          -1.2,
+          0,
+          -1.4695761589768238e-16
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "e7331209-5b83-46f3-83ea-d71375520f5f",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          -2.4,
+          0,
+          -2.9391523179536476e-16
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "67d9c5c3-b3ee-46cc-b812-18c60dd0d577",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          2.4,
+          0,
+          1.8000000000000003
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "fda0ca8b-16d7-402e-84e3-8cc780602cbb",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          1.2,
+          0,
+          1.8000000000000003
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "0a947ea0-02e9-4d58-9b9a-30307d535c8c",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          -1.2,
+          0,
+          1.7999999999999998
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "664485a1-f7ec-4759-aabb-ae138589a1b2",
+      "name": "课桌椅",
+      "kind": "setpiece",
+      "color": "#c4a579",
+      "transform": {
+        "position": [
+          -2.4,
+          0,
+          1.7999999999999998
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "school-desk",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "d8759150-6331-4194-956f-8151eee0df0f",
+      "name": "教师",
+      "kind": "actor",
+      "color": "#6c8991",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -3.2
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "actor": {
+        "pose": {
+          "rootOffset": [
+            0,
+            0,
+            0
+          ],
+          "joints": {
+            "root": [
+              0,
+              0,
+              0
+            ],
+            "pelvis": [
+              0,
+              0,
+              0
+            ],
+            "spine": [
+              0,
+              0,
+              0
+            ],
+            "neck": [
+              0,
+              0,
+              0
+            ],
+            "head": [
+              0,
+              0,
+              0
+            ],
+            "leftShoulder": [
+              0,
+              0,
+              0
+            ],
+            "leftElbow": [
+              0,
+              0,
+              0
+            ],
+            "leftWrist": [
+              0,
+              0,
+              0
+            ],
+            "rightShoulder": [
+              0,
+              0,
+              0
+            ],
+            "rightElbow": [
+              0,
+              0,
+              0
+            ],
+            "rightWrist": [
+              0,
+              0,
+              0
+            ],
+            "leftHip": [
+              0,
+              0,
+              0
+            ],
+            "leftKnee": [
+              0,
+              0,
+              0
+            ],
+            "leftAnkle": [
+              0,
+              0,
+              0
+            ],
+            "rightHip": [
+              0,
+              0,
+              0
+            ],
+            "rightKnee": [
+              0,
+              0,
+              0
+            ],
+            "rightAnkle": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "action": "none",
+        "speed": 1,
+        "phase": 0
+      }
+    },
+    {
+      "id": "970aad0b-cbd2-4428-84bd-79a1fab00c99",
+      "name": "学生",
+      "kind": "actor",
+      "color": "#bb7758",
+      "transform": {
+        "position": [
+          0.1,
+          0,
+          2.5
+        ],
+        "rotation": [
+          0,
+          1,
+          0,
+          6.123233995736766e-17
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "actor": {
+        "pose": {
+          "rootOffset": [
+            0,
+            0,
+            0
+          ],
+          "joints": {
+            "root": [
+              0,
+              0,
+              0
+            ],
+            "pelvis": [
+              0,
+              0,
+              0
+            ],
+            "spine": [
+              0,
+              0,
+              0
+            ],
+            "neck": [
+              0,
+              0,
+              0
+            ],
+            "head": [
+              0,
+              0,
+              0
+            ],
+            "leftShoulder": [
+              0,
+              0,
+              0
+            ],
+            "leftElbow": [
+              0,
+              0,
+              0
+            ],
+            "leftWrist": [
+              0,
+              0,
+              0
+            ],
+            "rightShoulder": [
+              0,
+              0,
+              0
+            ],
+            "rightElbow": [
+              0,
+              0,
+              0
+            ],
+            "rightWrist": [
+              0,
+              0,
+              0
+            ],
+            "leftHip": [
+              0,
+              0,
+              0
+            ],
+            "leftKnee": [
+              0,
+              0,
+              0
+            ],
+            "leftAnkle": [
+              0,
+              0,
+              0
+            ],
+            "rightHip": [
+              0,
+              0,
+              0
+            ],
+            "rightKnee": [
+              0,
+              0,
+              0
+            ],
+            "rightAnkle": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "action": "none",
+        "speed": 1,
+        "phase": 0
+      }
+    }
+  ],
+  "shots": [
+    {
+      "id": "f420a4f0-47af-4260-b58e-f01d1f4f8363",
+      "name": "01 · 从后排看教室",
+      "duration": 6,
+      "camera": {
+        "from": [
+          4.5,
+          3.8,
+          8.8
+        ],
+        "to": [
+          4,
+          3.3,
+          8
+        ],
+        "target": [
+          0,
+          1,
+          -1.3
+        ],
+        "targetEnd": [
+          0,
+          1,
+          -1.3
+        ],
+        "fov": 51,
+        "follow": null
+      },
+      "tracks": {},
+      "intent": "01 · 从后排看教室"
+    },
+    {
+      "id": "5ddfb122-81e6-43b1-8e1b-973fd0883bfe",
+      "name": "02 · 讲台与黑板",
+      "duration": 2,
+      "camera": {
+        "from": [
+          0.5,
+          1.7,
+          1.3
+        ],
+        "to": [
+          0.2,
+          1.65,
+          0.7
+        ],
+        "target": [
+          0,
+          1.3,
+          -3.4
+        ],
+        "targetEnd": [
+          0,
+          1.3,
+          -3.4
+        ],
+        "fov": 51,
+        "follow": null
+      },
+      "tracks": {},
+      "intent": "讲台中景轻轻前推；0秒自然站立、1秒侧向指示、2秒举手招呼。",
+      "poseTracks": {
+        "d8759150-6331-4194-956f-8151eee0df0f": [
+          {
+            "time": 0,
+            "pose": {
+              "rootOffset": [
+                0,
+                0,
+                0
+              ],
+              "joints": {
+                "root": [
+                  0,
+                  0,
+                  0
+                ],
+                "pelvis": [
+                  0,
+                  0,
+                  0
+                ],
+                "spine": [
+                  0,
+                  0,
+                  0
+                ],
+                "neck": [
+                  0,
+                  0,
+                  0
+                ],
+                "head": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftShoulder": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftElbow": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftWrist": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightShoulder": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightElbow": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightWrist": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftHip": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftKnee": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftAnkle": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightHip": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightKnee": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightAnkle": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "time": 1,
+            "pose": {
+              "rootOffset": [
+                0,
+                0,
+                0
+              ],
+              "joints": {
+                "root": [
+                  0,
+                  0,
+                  0
+                ],
+                "pelvis": [
+                  0,
+                  0,
+                  0
+                ],
+                "spine": [
+                  0,
+                  0,
+                  0
+                ],
+                "neck": [
+                  0,
+                  0,
+                  0
+                ],
+                "head": [
+                  0,
+                  -25,
+                  0
+                ],
+                "leftShoulder": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftElbow": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftWrist": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightShoulder": [
+                  -80,
+                  -30,
+                  -35
+                ],
+                "rightElbow": [
+                  -5,
+                  0,
+                  0
+                ],
+                "rightWrist": [
+                  0,
+                  0,
+                  -15
+                ],
+                "leftHip": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftKnee": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftAnkle": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightHip": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightKnee": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightAnkle": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "time": 2,
+            "pose": {
+              "rootOffset": [
+                0,
+                0,
+                0
+              ],
+              "joints": {
+                "root": [
+                  0,
+                  0,
+                  0
+                ],
+                "pelvis": [
+                  0,
+                  0,
+                  0
+                ],
+                "spine": [
+                  0,
+                  0,
+                  0
+                ],
+                "neck": [
+                  0,
+                  0,
+                  0
+                ],
+                "head": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftShoulder": [
+                  -15,
+                  0,
+                  135
+                ],
+                "leftElbow": [
+                  -75,
+                  0,
+                  0
+                ],
+                "leftWrist": [
+                  0,
+                  0,
+                  15
+                ],
+                "rightShoulder": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightElbow": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightWrist": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftHip": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftKnee": [
+                  0,
+                  0,
+                  0
+                ],
+                "leftAnkle": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightHip": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightKnee": [
+                  0,
+                  0,
+                  0
+                ],
+                "rightAnkle": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "745d1067-bf1b-4af8-a65b-20417f1e1020",
+      "name": "03 · 窗边走道",
+      "duration": 6,
+      "camera": {
+        "from": [
+          -4.4,
+          1.8,
+          4.5
+        ],
+        "to": [
+          -4.4,
+          1.8,
+          2.5
+        ],
+        "target": [
+          -3.7,
+          1,
+          -2
+        ],
+        "targetEnd": [
+          -3.7,
+          1,
+          -2
+        ],
+        "fov": 50,
+        "follow": null
+      },
+      "tracks": {},
+      "intent": "03 · 窗边走道"
+    }
+  ],
+  "notes": []
+}

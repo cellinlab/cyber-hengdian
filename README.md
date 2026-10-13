@@ -1,6 +1,8 @@
 <!-- bip:project:start -->
 # 赛博横店 · Cyber Hengdian
 
+[简体中文](README.md) · [English](README.en.md)
+
 **搭一次片场，让不同的人和 AI 接着拍。**
 
 面向创作者与 AI Agent 的开源虚拟片场基础设施。场景、演员、动作和镜头保存在开放工程中；网页导演台、CLI 和 MCP 修改同一份作品。
@@ -31,12 +33,18 @@ npm start
 
 ## 当前能力
 
-- 三个程序化片场、基础道具、自包含 GLB 导入、九个镜头配方。
+- 原有三个程序化片场，新增乡村道路、都市街道、教室、医院、巴黎广场五套可编辑场景；30 个原创模型、4 个组合、自包含 GLB 导入、九个镜头配方。
+- 17 组人物关节、8 种姿势预设、行走/奔跑/招手/说话/待机动作；按镜头保存姿态关键帧。新旧人物工程兼容。
+- 中英双语界面、资源搜索与分类、位移吸附；保留用户自己写的工程名、镜头名与备注。
 - 自由布置与摄影机视角，完整姿态编辑、稳定对象跟拍、镜头独立关键帧、时间批注。
 - 版本化原子操作、撤销/重做、落盘恢复、过期编辑冲突拒绝。
 - 可安装的外部数据片场包，版本不可覆盖；模型以内容哈希引用。
 - 拍摄包包含可编辑工程、引用模型、参考 MP4、关键帧、逐帧摄影机数据、校验清单；可选深度与对象 ID 序列。
 - CLI 与 stdio MCP 连接同一服务；配套 Skill 组织读取、导演、预览、检查与导出。
+
+![教室场景、关节演员与姿态轨道：真实英文导演台](public/readme/director-expanded.png)
+
+新增资产的单位、枢轴、许可和扩展约定见 [资产库](docs/ASSET-LIBRARY.md)。先选完整场景，再改演员、道具和镜头；场景替换需要确认，也可撤销。人物姿态轨道优先于程序动作，走位单独由位置关键帧控制。
 
 ## 给 Agent 使用
 
@@ -48,7 +56,7 @@ npm run cli -- status
 npm run mcp
 ```
 
-MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接入配置见 [Agent 指南](docs/AGENTS.md)，工作流程见 [导演 Skill](.agents/skills/direct-hengdian/SKILL.md)。已有登录的 Codex CLI 可运行 `npm run codex:direct -- examples/codex-courtyard/01-stage.md`；这会调用真实模型并修改当前片场，实验请使用独立工作空间。两轮自然语言导演案例、运行方法和实测边界见 [Codex 接入](docs/CODEX.md)。DeepSeek Harness 仍须独立实测。
+MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接入配置见 [Agent 指南](docs/AGENTS.md)，工作流程见 [导演 Skill](.agents/skills/direct-hengdian/SKILL.md)。已有登录的 Codex CLI 可运行 `npm run codex:direct -- examples/codex-courtyard/01-stage.md`；这会调用真实模型并修改当前片场，实验请使用独立工作空间。两轮自然语言导演案例、运行方法和实测边界见 [Codex 接入](docs/CODEX.md)。DeepSeek Harness 仍须独立实测。新增 [教室关节导演案例](examples/actor-classroom/README.md) 已由真实 Codex 建场、设置姿态轨道、查看三帧，并独立完成 720p 拍摄包导出与恢复。
 
 ![真实 Codex 导演：同一镜头调整前后的构图](public/readme/codex-camera-iteration.jpg)
 
@@ -76,6 +84,8 @@ MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接
 
 ## 建设自己的片场
 
+本轮市场调研与取舍见 [导演台研究](docs/research/DIRECTOR-LANDSCAPE.md)，后续 IK、接触约束、镜头路径、动作重定向与社区资源注册表分层见 [扩展规划](specs/DIRECTOR-EXPANSION.md)。
+
 从 [桌面产品示例](examples/tabletop.pack.json) 开始。资源包可以组合模型、对象与镜头，不需要修改运行核心。工程与包格式见 [格式说明](docs/FORMAT.md)，贡献方式见 [CONTRIBUTING](CONTRIBUTING.md)。
 
 ## 架构
@@ -96,11 +106,11 @@ npm run check
 npm run test:e2e
 ```
 
-核心、真实 HTTP 和 MCP 协议测试使用独立临时工作空间。浏览器验证独立运行，不修改当前拍摄工程。模板检查同时保护原作者区和资产。
+本轮检查与画面证据见 [扩展验证记录](docs/showcase/EXPANSION-VERIFICATION.md)。核心、真实 HTTP 和 MCP 协议测试使用独立临时工作空间。浏览器验证独立运行，不修改当前拍摄工程。模板检查同时保护原作者区和资产。
 
 ## 当前边界
 
-首版为单个本地工作空间，不是公开多租户服务。场景与物体为预演精度；没有通用物理、任意骨骼重定向、完整剪辑或付费生成服务。GLB 保留原单位和枢轴、默认播放第一个动画；请在建模工具中整理模型。深度是线性 8-bit 参考，透明几何控制通道按不透明表面输出；完整控制通道最多 720 帧。镜头轨迹当前采用起止点线性插值。
+首版为单个本地工作空间，不是公开多租户服务。场景与物体为预演精度；人物是 FK 关节编辑，尚无 IK、自动脚底锁定、手持约束；没有通用物理、任意骨骼重定向、完整剪辑或付费生成服务。程序行走默认原地循环，需要位置关键帧安排位移。GLB 保留原单位和枢轴、默认播放第一个动画；请在建模工具中整理模型。深度是线性 8-bit 参考，透明几何控制通道按不透明表面输出；完整控制通道最多 720 帧。镜头轨迹当前采用起止点线性插值。埃菲尔铁塔是约 6.45 米高的原创简化缩尺布景；内置模型依赖兼容运行时重建，拍摄包暂不包含它们的独立 GLB 文件。
 
 <!-- bip:project:end -->
 

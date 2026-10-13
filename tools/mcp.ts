@@ -2,6 +2,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import { actorTupleSchemas } from '../src/core/actor';
 import { quat, transactionSchema, transformSchema, vec3 } from '../src/core/schema';
 import { request, ServiceError } from './client';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
@@ -21,6 +22,9 @@ for (const [schema, length] of [
     maxItems: length,
   });
 }
+
+for (const tuple of actorTupleSchemas)
+  z.globalRegistry.add(tuple, { items: { type: 'number' }, minItems: 3, maxItems: 3 });
 
 const server = new McpServer(
   { name: 'cyber-hengdian', version: '0.1.0' },
@@ -75,11 +79,47 @@ server.registerTool(
   'list_catalog',
   {
     description:
-      'List available stage packs, prop kinds and shot recipes. These describe supported capabilities, not a remote asset marketplace.',
+      'List stage packs, prop kinds, shot recipes, 30 built-in model definitions, scene templates, assemblies, actor pose presets and joint limits. These describe supported capabilities, not a remote asset marketplace.',
     inputSchema: {},
     annotations: readOnly,
   },
   () => call('/api/catalog'),
+);
+server.registerTool(
+  'use_scene_template',
+  {
+    description:
+      'Replace the current project with a complete editable built-in scene. Find IDs in list_catalog.sceneTemplates. Requires the observed revision. Existing scene is replaced and can be undone in the director. Read and visually preview the result.',
+    inputSchema: { id: z.string().min(1).max(100), baseRevision: z.number().int().nonnegative() },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
+  },
+  ({ id, baseRevision }) =>
+    call('/api/scenes/' + encodeURIComponent(id) + '/instantiate', { baseRevision }),
+);
+server.registerTool(
+  'add_assembly',
+  {
+    description:
+      'Append a reusable group of independently editable props in one atomic operation. Find IDs in list_catalog.assemblies. Position is a world-space metre offset. Requires observed baseRevision and unique requestId; safe replay uses the same arguments. Does not create a persistent parent group.',
+    inputSchema: {
+      id: z.string().min(1).max(100),
+      baseRevision: z.number().int().nonnegative(),
+      requestId: z.string().min(1).max(100),
+      position: vec3.default([0, 0, 0]),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  ({ id, ...input }) => call('/api/assemblies/' + encodeURIComponent(id) + '/instantiate', input),
 );
 server.registerTool(
   'list_packs',

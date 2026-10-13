@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Vec3 } from '../../core/schema';
 import { Icon, type IconName } from '../Icons';
@@ -115,6 +116,7 @@ export function ModalShell({
   children: ReactNode;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const last = document.activeElement as HTMLElement;
@@ -159,7 +161,7 @@ export function ModalShell({
             <span className="eyebrow">{kicker}</span>
             <h2>{title}</h2>
           </div>
-          <Button aria-label="关闭窗口" icon="close" onClick={onClose} />
+          <Button aria-label={t('关闭窗口')} icon="close" onClick={onClose} />
         </header>
         {children}
       </div>

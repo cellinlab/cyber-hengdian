@@ -199,6 +199,13 @@ export class Exports {
             duration: count / fps,
             sourceDuration: shot.duration,
             resourcePack: p.resourcePack,
+            proceduralRuntime: {
+              actorRig: 'hengdian-humanoid/1',
+              setpieces: 'hengdian-setpieces/1',
+              license: 'MIT',
+              modelIds: [...new Set(p.entities.flatMap((e) => (e.modelId ? [e.modelId] : [])))],
+              note: 'Procedural geometry is recreated by the compatible Cyber Hengdian runtime; no standalone mesh files are embedded for built-in models.',
+            },
             units: 'meters',
             coordinates: 'right-handed Y-up',
             pack: { id: p.environment, version: p.packVersion, license: 'MIT' },

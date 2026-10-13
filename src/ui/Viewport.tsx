@@ -1,3 +1,4 @@
+import { useI18n, localizeError } from './i18n';
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -11,12 +12,14 @@ export type ViewportProps = {
   selection: string | null;
   mode: 'stage' | 'camera';
   tool: 'translate' | 'rotate' | 'scale';
+  snap?: number;
   onThumbnails?: (images: Record<string, string>, revision: number) => void;
   onSelect: (id: string | null) => void;
   onTransform: (id: string, t: Transform, revision: number) => void;
   onCapture: (position: [number, number, number], target: [number, number, number]) => void;
 };
 export function Viewport(props: ViewportProps) {
+  const { t } = useI18n();
   const container = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 800, height: 500 });
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -46,7 +49,7 @@ export function Viewport(props: ViewportProps) {
     try {
       stage = new Stage(canvas.current);
     } catch (e) {
-      setError('无法启动 WebGL：' + String(e));
+      setError(t('无法启动 WebGL：') + String(e));
       return;
     }
     const editor = new THREE.PerspectiveCamera(43, 1, 0.05, 200);
@@ -130,6 +133,7 @@ export function Viewport(props: ViewportProps) {
       ) {
         if (gizmo.object !== selected) gizmo.attach(selected);
         gizmo.setMode(p.tool);
+        gizmo.setTranslationSnap(p.snap || null);
       } else gizmo.detach();
       bounds.visible = !!selected && p.mode === 'stage';
       if (selected) bounds.setFromObject(selected);
@@ -196,7 +200,7 @@ export function Viewport(props: ViewportProps) {
       })
       .catch((e) => {
         if (active) {
-          setError('片场加载失败：' + e.message);
+          setError(t('片场加载失败：') + e.message);
           setLoading(false);
         }
       });
@@ -217,17 +221,17 @@ export function Viewport(props: ViewportProps) {
             : undefined
         }
       >
-        <canvas ref={canvas} aria-label="三维片场" />
+        <canvas ref={canvas} aria-label={t('三维片场')} />
         <div className="frame-corners" />
       </div>
       <div className="viewport-label">
         <span className="live-dot" />
-        {props.mode === 'stage' ? '自由布置' : '摄影机'}
+        {props.mode === 'stage' ? t('自由布置') : t('摄影机')}
         <span>{props.shot.name}</span>
       </div>
       <div className="viewport-meta">
         {props.project.aspect} <span>·</span> {props.project.fps} FPS <span>·</span>{' '}
-        {props.mode === 'stage' ? '拖动旋转 · 滚轮缩放' : `${props.shot.camera.fov}° FOV`}
+        {props.mode === 'stage' ? t('拖动旋转 · 滚轮缩放') : `${props.shot.camera.fov}° FOV`}
       </div>
       {props.mode === 'stage' && (
         <button
@@ -237,11 +241,11 @@ export function Viewport(props: ViewportProps) {
             if (r) props.onCapture(r.editor.position.toArray(), r.orbit.target.toArray());
           }}
         >
-          将此视角设为镜头起点 ↗
+          {t('将此视角设为镜头起点 ↗')}
         </button>
       )}
-      {loading && <div className="canvas-message">正在布置片场…</div>}
-      {error && <div className="canvas-message error">{error}</div>}
+      {loading && <div className="canvas-message">{t('正在布置片场…')}</div>}
+      {error && <div className="canvas-message error">{localizeError(error)}</div>}
     </div>
   );
 }

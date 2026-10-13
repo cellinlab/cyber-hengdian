@@ -195,3 +195,16 @@
 .muted {
   color: #546347;
 }
+.snap-selector {
+  width: 66px;
+  padding: 5px 4px;
+  font-size: 9px;
+  margin-left: 2px;
+}
+@media (max-width: 470px) {
+  .snap-selector {
+    width: 55px;
+    font-size: 8px;
+    padding: 5px 2px;
+  }
+}

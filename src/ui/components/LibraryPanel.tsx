@@ -1,9 +1,11 @@
+import { useI18n } from '../i18n';
 import { packs, props } from '../../core/catalog';
 import type { Project, Entity } from '../../core/schema';
-import type { Set, InputRef, Perform, PackInfo } from '../types';
+import type { Set, InputRef, Perform, PackInfo, Command } from '../types';
 import { api } from '../api';
 import { Icon } from '../Icons';
 import { Button } from './Controls';
+import { AssetExplorer } from './AssetExplorer';
 
 type LibraryPanelProps = {
   project: Project;
@@ -14,6 +16,7 @@ type LibraryPanelProps = {
   installedPacks: PackInfo[];
   busy: boolean;
   perform: Perform;
+  command: Command;
   setTime: Set<number>;
   setPlaying: Set<boolean>;
   addObject: (kind: Entity['kind']) => void;
@@ -32,6 +35,7 @@ export function LibraryPanel({
   installedPacks,
   busy,
   perform,
+  command,
   setTime,
   setPlaying,
   addObject,
@@ -41,24 +45,42 @@ export function LibraryPanel({
   setSelection,
   setMobilePanel,
 }: LibraryPanelProps) {
+  const { t, catalogText } = useI18n();
   return (
     <aside
       className={'library ' + (mobilePanel === 'assets' ? 'mobile-open' : '')}
-      aria-label="片场资源"
+      aria-label={t('片场资源')}
     >
       <div className="panel-tabs">
         <button className={tab === 'assets' ? 'selected' : ''} onClick={() => setTab('assets')}>
-          资源库
+          {t('资源库')}
         </button>
         <button className={tab === 'objects' ? 'selected' : ''} onClick={() => setTab('objects')}>
-          场内对象 <span>{project.entities.length}</span>
+          {t('场内对象')}
+          <span>{project.entities.length}</span>
         </button>
       </div>
       <div className="panel-scroll">
         {tab === 'assets' ? (
           <>
+            <AssetExplorer
+              project={project}
+              busy={busy}
+              command={command}
+              perform={perform}
+              onAdded={(entities) => {
+                if (entities[0]) setSelection(entities[0].id);
+                setTab('objects');
+                setMobilePanel(null);
+              }}
+              onReplaced={() => {
+                setTime(0);
+                setPlaying(false);
+                setSelection(null);
+              }}
+            />
             <div className="section-heading">
-              <span>选择片场</span>
+              <span>{t('选择片场')}</span>
               <span>03</span>
             </div>
             <div className="pack-list">
@@ -70,7 +92,9 @@ export function LibraryPanel({
                     if (p.id === project.environment) return;
                     if (
                       window.confirm(
-                        `切换到「${p.name}」会载入一套新工程。当前工程可用撤销恢复。继续？`,
+                        t('切换到「{p0}」会载入一套新工程。当前工程可用撤销恢复。继续？', {
+                          p0: catalogText(p.name),
+                        }),
                       )
                     )
                       void perform(() =>
@@ -91,8 +115,8 @@ export function LibraryPanel({
                     <span>0{i + 1}</span>
                   </div>
                   <div className="pack-copy">
-                    <strong>{p.name}</strong>
-                    <small>{p.subtitle}</small>
+                    <strong>{catalogText(p.name)}</strong>
+                    <small>{catalogText(p.subtitle)}</small>
                   </div>
                   {p.id === project.environment && <Icon name="check" size={14} />}
                 </button>
@@ -101,7 +125,7 @@ export function LibraryPanel({
             {installedPacks.length > 0 && (
               <>
                 <div className="section-heading">
-                  <span>已安装片场</span>
+                  <span>{t('已安装片场')}</span>
                   <span>{installedPacks.length}</span>
                 </div>
                 <div className="installed-packs">
@@ -110,7 +134,11 @@ export function LibraryPanel({
                       key={p.id + '@' + p.version}
                       disabled={busy}
                       onClick={() => {
-                        if (window.confirm(`载入「${p.name}」将替换当前工程，可撤销恢复。继续？`))
+                        if (
+                          window.confirm(
+                            t('载入「{p0}」将替换当前工程，可撤销恢复。继续？', { p0: p.name }),
+                          )
+                        )
                           void perform(() =>
                             api<Project>(`packs/${encodeURIComponent(p.id)}/instantiate`, {
                               baseRevision: project.revision,
@@ -136,7 +164,7 @@ export function LibraryPanel({
               </>
             )}
             <div className="section-heading">
-              <span>加入场景</span>
+              <span>{t('加入场景')}</span>
               <span>08</span>
             </div>
             <div className="prop-grid">
@@ -156,7 +184,7 @@ export function LibraryPanel({
                       size={22}
                     />
                   </span>
-                  {p.name}
+                  {catalogText(p.name)}
                   <Icon name="plus" size={12} />
                 </button>
               ))}
@@ -168,7 +196,8 @@ export function LibraryPanel({
             >
               <Icon name="upload" />
               <span>
-                导入 3D 模型<small>自包含 GLB · 最大 50 MB</small>
+                {t('导入 3D 模型')}
+                <small>{t('自包含 GLB · 最大 50 MB')}</small>
               </span>
             </button>
             <button
@@ -178,20 +207,21 @@ export function LibraryPanel({
             >
               <Icon name="folder" />
               <span>
-                导入片场包<small>开放资源包 JSON / 工程 ZIP</small>
+                {t('导入片场包')}
+                <small>{t('开放资源包 JSON / 工程 ZIP')}</small>
               </span>
             </button>
             <div className="library-footnote">
               <span className="eyebrow">OPEN SETS / V1</span>
-              <p>搭一次片场，让不同的人和 AI 接着拍。</p>
-              <small>内置资源包 1.0.0 · MIT</small>
+              <p>{t('搭一次片场，让不同的人和 AI 接着拍。')}</p>
+              <small>{t('内置资源包 1.0.0 · MIT')}</small>
             </div>
           </>
         ) : (
           <>
             <div className="section-heading">
-              <span>{currentPack.name}</span>
-              <Button icon="plus" aria-label="打开资源库" onClick={() => setTab('assets')} />
+              <span>{catalogText(currentPack.name)}</span>
+              <Button icon="plus" aria-label={t('打开资源库')} onClick={() => setTab('assets')} />
             </div>
             <div className="object-list">
               {project.entities.map((e) => (
@@ -213,7 +243,7 @@ export function LibraryPanel({
               ))}
             </div>
             {!project.entities.length && (
-              <p className="empty">这里还是空的。去资源库加入第一个主角。</p>
+              <p className="empty">{t('这里还是空的。去资源库加入第一个主角。')}</p>
             )}
           </>
         )}

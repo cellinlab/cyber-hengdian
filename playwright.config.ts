@@ -17,6 +17,7 @@ export default defineConfig({
   timeout: 45_000,
   expect: { timeout: 10_000 },
   use: {
+    locale: 'zh-CN',
     baseURL: 'http://127.0.0.1:4331',
     viewport: { width: 1440, height: 960 },
     launchOptions: {

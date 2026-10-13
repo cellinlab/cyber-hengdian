@@ -68,10 +68,10 @@
           "$ref": "#/$defs/__schema9"
         },
         "shots": {
-          "$ref": "#/$defs/__schema22"
+          "$ref": "#/$defs/__schema25"
         },
         "notes": {
-          "$ref": "#/$defs/__schema25"
+          "$ref": "#/$defs/__schema29"
         }
       },
       "required": [
@@ -143,7 +143,8 @@
       "enum": [
         "courtyard",
         "studio",
-        "exterior"
+        "exterior",
+        "empty"
       ]
     },
     "__schema7": {
@@ -199,14 +200,20 @@
         "locked": {
           "$ref": "#/$defs/__schema18"
         },
-        "asset": {
+        "actor": {
           "$ref": "#/$defs/__schema19"
         },
+        "modelId": {
+          "$ref": "#/$defs/__schema21"
+        },
+        "asset": {
+          "$ref": "#/$defs/__schema22"
+        },
         "source": {
-          "$ref": "#/$defs/__schema20"
+          "$ref": "#/$defs/__schema23"
         },
         "license": {
-          "$ref": "#/$defs/__schema21"
+          "$ref": "#/$defs/__schema24"
         }
       },
       "required": [
@@ -230,7 +237,8 @@
         "chair",
         "table",
         "product",
-        "glb"
+        "glb",
+        "setpiece"
       ]
     },
     "__schema12": {
@@ -304,26 +312,639 @@
       "type": "boolean"
     },
     "__schema19": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{64}\\.glb$"
+      "type": "object",
+      "properties": {
+        "pose": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "action": {
+          "default": "none",
+          "type": "string",
+          "enum": [
+            "none",
+            "walk",
+            "run",
+            "wave",
+            "talk",
+            "idle"
+          ]
+        },
+        "speed": {
+          "default": 1,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "phase": {
+          "default": 0,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "pose",
+        "action",
+        "speed",
+        "phase"
+      ],
+      "additionalProperties": false
     },
     "__schema20": {
-      "type": "string",
-      "maxLength": 500
+      "type": "object",
+      "properties": {
+        "rootOffset": {
+          "default": [
+            0,
+            0,
+            0
+          ],
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -3,
+              "maximum": 3
+            },
+            {
+              "type": "number",
+              "minimum": -3,
+              "maximum": 3
+            },
+            {
+              "type": "number",
+              "minimum": -3,
+              "maximum": 3
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "joints": {
+          "type": "object",
+          "properties": {
+            "root": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "pelvis": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -50,
+                  "maximum": 60
+                },
+                {
+                  "type": "number",
+                  "minimum": -60,
+                  "maximum": 60
+                },
+                {
+                  "type": "number",
+                  "minimum": -40,
+                  "maximum": 40
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "spine": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -40,
+                  "maximum": 65
+                },
+                {
+                  "type": "number",
+                  "minimum": -70,
+                  "maximum": 70
+                },
+                {
+                  "type": "number",
+                  "minimum": -45,
+                  "maximum": 45
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "neck": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -35,
+                  "maximum": 40
+                },
+                {
+                  "type": "number",
+                  "minimum": -55,
+                  "maximum": 55
+                },
+                {
+                  "type": "number",
+                  "minimum": -30,
+                  "maximum": 30
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "head": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -35,
+                  "maximum": 40
+                },
+                {
+                  "type": "number",
+                  "minimum": -65,
+                  "maximum": 65
+                },
+                {
+                  "type": "number",
+                  "minimum": -30,
+                  "maximum": 30
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "leftShoulder": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 110
+                },
+                {
+                  "type": "number",
+                  "minimum": -120,
+                  "maximum": 120
+                },
+                {
+                  "type": "number",
+                  "minimum": -165,
+                  "maximum": 165
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "leftElbow": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -155,
+                  "maximum": 0
+                },
+                {
+                  "type": "number",
+                  "minimum": -80,
+                  "maximum": 80
+                },
+                {
+                  "type": "number",
+                  "minimum": -5,
+                  "maximum": 5
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "leftWrist": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -80,
+                  "maximum": 80
+                },
+                {
+                  "type": "number",
+                  "minimum": -85,
+                  "maximum": 85
+                },
+                {
+                  "type": "number",
+                  "minimum": -45,
+                  "maximum": 45
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rightShoulder": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 110
+                },
+                {
+                  "type": "number",
+                  "minimum": -120,
+                  "maximum": 120
+                },
+                {
+                  "type": "number",
+                  "minimum": -165,
+                  "maximum": 165
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rightElbow": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -155,
+                  "maximum": 0
+                },
+                {
+                  "type": "number",
+                  "minimum": -80,
+                  "maximum": 80
+                },
+                {
+                  "type": "number",
+                  "minimum": -5,
+                  "maximum": 5
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rightWrist": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -80,
+                  "maximum": 80
+                },
+                {
+                  "type": "number",
+                  "minimum": -85,
+                  "maximum": 85
+                },
+                {
+                  "type": "number",
+                  "minimum": -45,
+                  "maximum": 45
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "leftHip": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -135,
+                  "maximum": 55
+                },
+                {
+                  "type": "number",
+                  "minimum": -60,
+                  "maximum": 60
+                },
+                {
+                  "type": "number",
+                  "minimum": -50,
+                  "maximum": 50
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "leftKnee": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 155
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "leftAnkle": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -70,
+                  "maximum": 50
+                },
+                {
+                  "type": "number",
+                  "minimum": -25,
+                  "maximum": 25
+                },
+                {
+                  "type": "number",
+                  "minimum": -30,
+                  "maximum": 30
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rightHip": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -135,
+                  "maximum": 55
+                },
+                {
+                  "type": "number",
+                  "minimum": -60,
+                  "maximum": 60
+                },
+                {
+                  "type": "number",
+                  "minimum": -50,
+                  "maximum": 50
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rightKnee": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 155
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0
+                },
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rightAnkle": {
+              "default": [
+                0,
+                0,
+                0
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number",
+                  "minimum": -70,
+                  "maximum": 50
+                },
+                {
+                  "type": "number",
+                  "minimum": -25,
+                  "maximum": 25
+                },
+                {
+                  "type": "number",
+                  "minimum": -30,
+                  "maximum": 30
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "required": [
+            "root",
+            "pelvis",
+            "spine",
+            "neck",
+            "head",
+            "leftShoulder",
+            "leftElbow",
+            "leftWrist",
+            "rightShoulder",
+            "rightElbow",
+            "rightWrist",
+            "leftHip",
+            "leftKnee",
+            "leftAnkle",
+            "rightHip",
+            "rightKnee",
+            "rightAnkle"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "rootOffset",
+        "joints"
+      ],
+      "additionalProperties": false
     },
     "__schema21": {
       "type": "string",
-      "maxLength": 160
+      "enum": [
+        "eiffel-tower",
+        "clock-tower",
+        "cottage",
+        "apartment",
+        "shopfront",
+        "road-straight",
+        "sidewalk",
+        "crosswalk",
+        "streetlight",
+        "tree",
+        "fence",
+        "school-desk",
+        "blackboard",
+        "bookshelf",
+        "hospital-bed",
+        "iv-stand",
+        "monitor",
+        "reception",
+        "wall-panel",
+        "doorway",
+        "window-wall",
+        "bench",
+        "bollard",
+        "planter",
+        "bus-stop",
+        "traffic-light",
+        "stairs",
+        "cafe-table",
+        "chair",
+        "floor-slab"
+      ]
     },
     "__schema22": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}\\.glb$"
+    },
+    "__schema23": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "__schema24": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "__schema25": {
       "minItems": 1,
       "maxItems": 100,
       "type": "array",
       "items": {
-        "$ref": "#/$defs/__schema23"
+        "$ref": "#/$defs/__schema26"
       }
     },
-    "__schema23": {
+    "__schema26": {
       "type": "object",
       "properties": {
         "id": {
@@ -389,13 +1010,26 @@
             "maxItems": 200,
             "type": "array",
             "items": {
-              "$ref": "#/$defs/__schema24"
+              "$ref": "#/$defs/__schema27"
             }
           }
         },
         "intent": {
           "type": "string",
           "maxLength": 2000
+        },
+        "poseTracks": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema28"
+            }
+          }
         }
       },
       "required": [
@@ -408,7 +1042,7 @@
       ],
       "additionalProperties": false
     },
-    "__schema24": {
+    "__schema27": {
       "type": "object",
       "properties": {
         "position": {
@@ -435,14 +1069,32 @@
       ],
       "additionalProperties": false
     },
-    "__schema25": {
+    "__schema28": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "pose": {
+          "$ref": "#/$defs/__schema20"
+        }
+      },
+      "required": [
+        "time",
+        "pose"
+      ],
+      "additionalProperties": false
+    },
+    "__schema29": {
       "maxItems": 1000,
       "type": "array",
       "items": {
-        "$ref": "#/$defs/__schema26"
+        "$ref": "#/$defs/__schema30"
       }
     },
-    "__schema26": {
+    "__schema30": {
       "type": "object",
       "properties": {
         "id": {

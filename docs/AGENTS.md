@@ -68,3 +68,11 @@ The acceptance workflow uses two natural-language turns: build a three-shot cour
 This is local **Codex CLI** verification with Chrome/FFmpeg rendering. It does not establish native MCP use inside a Codex desktop chat, DeepSeek Harness compatibility, arbitrary-model vision quality or external video-generation quality. A model without image support cannot claim visual review from framing metadata.
 
 The scene service itself makes no language-model or external video-generation calls. The optional Codex launcher does invoke the authenticated Codex model and consumes the account's normal allowance. Neither path automatically publishes, deploys or sends exported material to a video-generation provider.
+
+## Scene library and joint direction
+
+`list_catalog` now exposes bilingual `assets`, `sceneTemplates`, `assemblies`, `posePresets` and `jointDefinitions` in addition to the original packs/recipes. `use_scene_template` replaces the project with one of five editable spaces and requires the observed revision. `add_assembly` appends independently editable entities with `baseRevision`, `requestId`, optional metre `position`, and safe identical-argument replay. These are built-in factories, not downloaded executable plugins.
+
+For a setpiece, add an entity with `kind: "setpiece"`, a catalog `modelId`, normal transform and the catalog source/license. For an articulated actor, discover joint limits before editing. `pose.set` and `pose.remove` operate on shot-local pose keys; a nonempty pose track overrides procedural action. Root position keys direct travel independently. Use the preset `pose` value as a starting point, not undocumented joint fields. Imported legacy actors need an explicit `actor` definition before pose keys can target them.
+
+Current rigs are FK and procedural. Do not claim foot locking, physical contact, arbitrary retargeting or natural human movement from a valid schema. Check actual frames for joint pose, prop contact, occlusion and camera framing. The built-in geometry is reconstructed by a compatible runtime, while imported GLBs travel inside the shooting pack.

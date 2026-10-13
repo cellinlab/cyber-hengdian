@@ -285,6 +285,63 @@ describe('real HTTP service through MCP stdio', () => {
     expect(inspection.revision).toBe(saved.revision);
   });
 
+  it('discovers scene and rig capabilities, appends assemblies idempotently and directs a pose', async () => {
+    const catalog = textData(await client.callTool({ name: 'list_catalog', arguments: {} }));
+    expect(catalog.assets).toHaveLength(30);
+    expect(catalog.sceneTemplates).toHaveLength(5);
+    expect(catalog.jointDefinitions).toHaveLength(17);
+    const before = textData(
+      await client.callTool({ name: 'read_project', arguments: {} }),
+    ) as Project;
+    const loaded = await client.callTool({
+      name: 'use_scene_template',
+      arguments: { id: 'classroom', baseRevision: before.revision },
+    });
+    expect(loaded.isError).not.toBe(true);
+    const classroom = textData(loaded) as Project;
+    expect(classroom.environment).toBe('empty');
+    const args = {
+      id: 'hospital-bay',
+      baseRevision: classroom.revision,
+      requestId: 'assembly-integration',
+      position: [10, 0, 0],
+    };
+    const appended = await client.callTool({ name: 'add_assembly', arguments: args });
+    expect(appended.isError).not.toBe(true);
+    const replay = await client.callTool({ name: 'add_assembly', arguments: args });
+    expect(replay.isError).not.toBe(true);
+    expect(textData(replay)).toEqual(textData(appended));
+    const current = textData(appended) as Project;
+    expect(current.entities.length).toBeGreaterThan(classroom.entities.length);
+    const actor = current.entities.find((e) => e.actor)!;
+    const posed = await client.callTool({
+      name: 'apply_operations',
+      arguments: {
+        requestId: 'pose-integration',
+        baseRevision: current.revision,
+        label: 'Direct actor',
+        operations: [
+          {
+            type: 'pose.set',
+            shotId: current.shots[0].id,
+            entityId: actor.id,
+            key: { time: 0, pose: catalog.posePresets.find((p: any) => p.id === 'point').pose },
+          },
+        ],
+      },
+    });
+    expect(posed.isError).not.toBe(true);
+    expect(textData(posed).shots[0].poseTracks[actor.id][0].pose).toEqual(
+      catalog.posePresets.find((p: any) => p.id === 'point').pose,
+    );
+    const stale = await client.callTool({
+      name: 'use_scene_template',
+      arguments: { id: 'hospital', baseRevision: before.revision },
+    });
+    expect(stale.isError).toBe(true);
+    expect(textData(stale).status).toBe(409);
+  });
+
   it('returns export validation and missing-job errors rather than invented success', async () => {
     const project = textData(
       await client.callTool({ name: 'read_project', arguments: {} }),

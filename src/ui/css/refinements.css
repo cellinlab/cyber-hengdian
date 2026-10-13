@@ -70,3 +70,71 @@
   border-radius: 2px;
   text-shadow: 0 1px 3px #0008;
 }
+
+/* Language changes only interface presentation, never project content. */
+.language-selector {
+  width: 83px;
+  flex-shrink: 0;
+  padding: 7px 6px;
+  margin-left: 8px;
+  font-size: 10px;
+  background: var(--panel-raised);
+}
+html[lang='en'] .brand {
+  font-size: 14px;
+  letter-spacing: 0;
+}
+html[lang='en'] .brand small {
+  font-size: 6px;
+  letter-spacing: 0.7px;
+}
+html[lang='en'] .pack-copy strong {
+  white-space: normal;
+  line-height: 1.4;
+}
+html[lang='en'] .pack-copy small {
+  white-space: normal;
+  line-height: 1.4;
+}
+html[lang='en'] .panel-tabs {
+  gap: 14px;
+}
+html[lang='en'] .section-heading {
+  letter-spacing: 0.3px;
+}
+html[lang='en'] .topbar {
+  gap: 16px;
+}
+html[lang='en'] .project-title {
+  min-width: 0;
+  max-width: 180px;
+}
+@media (max-width: 1150px) {
+  html[lang='en'] .save-state {
+    display: none;
+  }
+  html[lang='en'] .top-actions {
+    margin-left: auto;
+  }
+}
+@media (max-width: 780px) {
+  .language-selector {
+    width: 65px;
+    margin-left: 5px;
+    font-size: 9px;
+  }
+  html[lang='en'] .topbar {
+    gap: 8px;
+  }
+}
+@media (max-width: 470px) {
+  .topbar .brand > span:last-child {
+    display: none;
+  }
+  .topbar .project-title {
+    max-width: 100px;
+  }
+  .topbar .language-selector {
+    width: 63px;
+  }
+}

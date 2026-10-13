@@ -1,4 +1,5 @@
 import express from 'express';
+import { createHash } from 'node:crypto';
 import { createServer as createHttpServer } from 'node:http';
 import { createServer as createViteServer } from 'vite';
 import { mkdirSync, existsSync } from 'node:fs';
@@ -12,7 +13,15 @@ import { lockWorkspace } from './lock';
 import { preview } from './preview';
 import { storeGlb } from './assets';
 import { packs, props, recipes, createProject } from '../src/core/catalog';
-import { projectSchema, operationSchema } from '../src/core/schema';
+import {
+  assetLibrary,
+  assemblies,
+  sceneTemplates,
+  createSceneTemplate,
+  instantiateAssembly,
+} from '../src/core/library';
+import { posePresets, jointDefinitions } from '../src/core/actor';
+import { projectSchema, operationSchema, environmentSchema, vec3 } from '../src/core/schema';
 import { inspect, Conflict } from '../src/core/project';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 4317);
@@ -53,7 +62,18 @@ const publish = () => {
     res.write(`data: ${JSON.stringify({ revision: store.project.revision })}\n\n`);
 };
 app.get('/api/project', (_, res) => res.json(store.project));
-app.get('/api/catalog', (_, res) => res.json({ packs, props, recipes }));
+app.get('/api/catalog', (_, res) =>
+  res.json({
+    packs,
+    props,
+    recipes,
+    assets: assetLibrary,
+    assemblies,
+    sceneTemplates,
+    posePresets,
+    jointDefinitions,
+  }),
+);
 app.get('/api/schema', (_, res) =>
   res.json({
     project: z.toJSONSchema(projectSchema),
@@ -73,6 +93,45 @@ app.post('/api/packs/:id/instantiate', (req, res) => {
   const p = registry.instantiate(req.params.id, req.body.version);
   checkAssets(p);
   res.json(store.replace(p, z.number().int().parse(req.body.baseRevision), '载入片场包'));
+  publish();
+});
+app.post('/api/scenes/:id/instantiate', (req, res) => {
+  const input = z.object({ baseRevision: z.number().int().nonnegative() }).strict().parse(req.body);
+  const definition = sceneTemplates.find((item) => item.id === req.params.id);
+  if (!definition) throw Error('Unknown scene template');
+  res.json(
+    store.replace(createSceneTemplate(definition.id), input.baseRevision, 'Load scene template'),
+  );
+  publish();
+});
+app.post('/api/assemblies/:id/instantiate', (req, res) => {
+  const input = z
+    .object({
+      baseRevision: z.number().int().nonnegative(),
+      requestId: z.string(),
+      position: vec3.default([0, 0, 0]),
+    })
+    .strict()
+    .parse(req.body);
+  const definition = assemblies.find((item) => item.id === req.params.id);
+  if (!definition) throw Error('Unknown assembly');
+  const entities = instantiateAssembly(definition.id, input.position).map((entity, index) => ({
+    ...entity,
+    id:
+      'assembly-' +
+      createHash('sha256')
+        .update(input.requestId + ':' + index)
+        .digest('hex')
+        .slice(0, 32),
+  }));
+  res.json(
+    store.transact({
+      baseRevision: input.baseRevision,
+      requestId: input.requestId,
+      label: 'Add assembly',
+      operations: entities.map((entity) => ({ type: 'entity.add', entity })),
+    }),
+  );
   publish();
 });
 app.get('/api/history', (_, res) => res.json(store.history()));
@@ -109,7 +168,7 @@ app.post('/api/import', (req, res) => {
   publish();
 });
 app.post('/api/new', (req, res) => {
-  const environment = z.enum(['courtyard', 'studio', 'exterior']).parse(req.body.environment);
+  const environment = environmentSchema.parse(req.body.environment);
   res.json(
     store.replace(
       createProject(environment),

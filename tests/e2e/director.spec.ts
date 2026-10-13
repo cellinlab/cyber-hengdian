@@ -194,6 +194,7 @@ test('imports a self-contained handoff ZIP without losing subject identity or ca
     source: 'Test triangle',
     license: 'CC0-1.0',
   });
+  delete subject.actor; // This fixture replaces the rig with an external GLB.
   project.name = '来自另一个片场的工程';
   project.shots[0].camera.follow = stableId;
   project.shots[0].tracks[stableId] = [

@@ -1,3 +1,4 @@
+import { useI18n, LanguageSelector, localizeError } from './i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { unzipSync, strFromU8 } from 'fflate';
 import { packs, newEntity } from '../core/catalog';
@@ -20,6 +21,7 @@ import { Timeline } from './components/Timeline';
 import { AppDialogs } from './components/AppDialogs';
 import type { History, PackInfo, Job, Modal } from './types';
 export function App() {
+  const { t, catalogText, locale } = useI18n();
   const [project, setProject] = useState<Project | null>(null),
     projectRef = useRef<Project | null>(null);
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
@@ -29,6 +31,7 @@ export function App() {
     [playing, setPlaying] = useState(false);
   const [mode, setMode] = useState<'stage' | 'camera'>('camera'),
     [tool, setTool] = useState<'translate' | 'rotate' | 'scale'>('translate');
+  const [snap, setSnap] = useState(0);
   const [tab, setTab] = useState<'assets' | 'objects'>('assets'),
     [mobilePanel, setMobilePanel] = useState<'assets' | 'inspect' | null>(null);
   const [modal, setModal] = useState<Modal>(null),
@@ -145,7 +148,7 @@ export function App() {
     const timer = setInterval(poll, 1200);
     return () => clearInterval(timer);
   }, [modal]);
-  const transform = (id: string, t: Transform, revision: number) => {
+  const transform = (id: string, value: Transform, revision: number) => {
     if (!project || !shot) return;
     const target = project.entities.find((e) => e.id === id);
     if (!target) return;
@@ -164,18 +167,18 @@ export function App() {
         shotId: shot.id,
         entityId: id,
         key: {
-          ...t,
+          ...value,
           time: Math.min(
             shot.duration,
             Math.round(time * Number(project.fps)) / Number(project.fps),
           ),
         },
       });
-    } else ops.push({ type: 'entity.update', id, changes: { transform: t } });
-    void command(ops, '调整 ' + target.name, revision);
+    } else ops.push({ type: 'entity.update', id, changes: { transform: value } });
+    void command(ops, t('调整 ') + target.name, revision);
   };
   const editShot = (changes: Partial<Omit<Shot, 'id' | 'tracks'>>) => {
-    if (shot) void command([{ type: 'shot.update', id: shot.id, changes }], '修改镜头');
+    if (shot) void command([{ type: 'shot.update', id: shot.id, changes }], t('修改镜头'));
   };
   const selectShot = (id: string) => {
     setShotId(id);
@@ -184,7 +187,8 @@ export function App() {
   };
   const addObject = (kind: Entity['kind']) => {
     const e = newEntity(kind);
-    void command([{ type: 'entity.add', entity: e }], '加入 ' + e.name).then(() => {
+    e.name = catalogText(e.name);
+    void command([{ type: 'entity.add', entity: e }], t('加入 ') + e.name).then(() => {
       if (projectRef.current?.entities.some((x) => x.id === e.id)) {
         setSelection(e.id);
         setTab('objects');
@@ -196,11 +200,11 @@ export function App() {
     if (!entity) return;
     const copy = structuredClone(entity);
     copy.id = uid();
-    copy.name += ' 副本';
+    copy.name += t(' 副本');
     copy.locked = false;
     copy.transform = structuredClone(sampled?.transform ?? entity.transform);
     copy.transform.position[0] += 0.7;
-    void command([{ type: 'entity.add', entity: copy }], '复制对象').then(() =>
+    void command([{ type: 'entity.add', entity: copy }], t('复制对象')).then(() =>
       setSelection(copy.id),
     );
   };
@@ -211,13 +215,13 @@ export function App() {
       body: bytes instanceof File ? bytes : new Blob([bytes as Uint8Array<ArrayBuffer>]),
     });
     const data = await res.json();
-    if (!res.ok) throw Error(data.error || '模型上传失败');
+    if (!res.ok) throw Error(data.error || t('模型上传失败'));
     return data.asset as string;
   };
   const importProject = async (file: File) => {
     if (
       !project ||
-      !window.confirm('导入会替换当前工程。已有修改已保存，导入后可用撤销恢复。继续导入？')
+      !window.confirm(t('导入会替换当前工程。已有修改已保存，导入后可用撤销恢复。继续导入？'))
     )
       return;
     const revision = project.revision;
@@ -226,12 +230,12 @@ export function App() {
       if (file.name.toLowerCase().endsWith('.zip')) {
         const files = unzipSync(new Uint8Array(await file.arrayBuffer()));
         const json = files['project.hengdian.json'];
-        if (!json) throw Error('工程包中缺少 project.hengdian.json');
+        if (!json) throw Error(t('工程包中缺少 project.hengdian.json'));
         p = projectSchema.parse(JSON.parse(strFromU8(json)));
         for (const asset of new Set(p.entities.map((e) => e.asset).filter(Boolean))) {
           const bytes = files['assets/' + asset];
-          if (!bytes) throw Error('工程包缺少模型：' + asset);
-          if ((await uploadAsset(bytes)) !== asset) throw Error('模型内容与工程引用不一致');
+          if (!bytes) throw Error(t('工程包缺少模型：') + asset);
+          if ((await uploadAsset(bytes)) !== asset) throw Error(t('模型内容与工程引用不一致'));
         }
       } else {
         const parsed = JSON.parse(await file.text());
@@ -256,14 +260,14 @@ export function App() {
       const asset = await uploadAsset(file);
       const e: Entity = {
         ...newEntity('glb'),
-        name: file.name.replace(/\.glb$/i, '').slice(0, 160) || '导入模型',
+        name: file.name.replace(/\.glb$/i, '').slice(0, 160) || t('导入模型'),
         asset,
         source: file.name,
       };
       const result = await api<Project>('commands', {
         requestId: uid(),
         baseRevision: revision,
-        label: '导入模型',
+        label: t('导入模型'),
         operations: [
           replaceId
             ? {
@@ -284,11 +288,12 @@ export function App() {
     return (
       <main className="boot">
         <div className="brand-mark">H</div>
-        <h1>赛博横店</h1>
-        <p>{error || '准备你的下一场拍摄…'}</p>
+        <h1>{t('赛博横店')}</h1>
+        <LanguageSelector />
+        <p>{localizeError(error) || t('准备你的下一场拍摄…')}</p>
         {error && (
           <Button icon="rotate" onClick={() => void refresh().catch((e) => setError(e.message))}>
-            重新连接
+            {t('重新连接')}
           </Button>
         )}
       </main>
@@ -297,33 +302,35 @@ export function App() {
   const setTransform = (change: Partial<Transform>) => {
     if (sampled) transform(sampled.id, { ...sampled.transform, ...change }, project.revision);
   };
-  const currentPack = packs.find((p) => p.id === project.environment)!;
+  const currentPack = packs.find((p) => p.id === project.environment) ?? { name: t('自定义片场') };
   return (
     <main className="workspace">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="赛博横店首页">
+        <a className="brand" href="/" aria-label={t('赛博横店首页')}>
           <span className="brand-mark">H</span>
           <span>
-            赛博横店<small>CYBER HENGDIAN</small>
+            {t('赛博横店')}
+            <small>{locale === 'en' ? 'OPEN VIRTUAL PRODUCTION' : 'CYBER HENGDIAN'}</small>
           </span>
         </a>
         <span className="top-divider" />
         <button className="project-title" onClick={() => setModal('project')}>
           <span>{project.name}</span>
           <small>
-            本地工程 <span>⌄</span>
+            {t('本地工程')}
+            <span>⌄</span>
           </small>
         </button>
         <div className="save-state" aria-live="polite">
           <span className={busy ? 'saving-dot' : 'live-dot'} />
-          {status}
+          {catalogText(status)}
           <span className="revision">r{project.revision}</span>
         </div>
         <nav className="top-actions">
           <Button
             icon="undo"
-            aria-label="撤销"
-            title="撤销"
+            aria-label={t('撤销')}
+            title={t('撤销')}
             disabled={!history.canUndo || busy}
             onClick={() =>
               void perform(() => api<Project>('history/undo', { baseRevision: project.revision }))
@@ -331,26 +338,33 @@ export function App() {
           />
           <Button
             icon="redo"
-            aria-label="重做"
-            title="重做"
+            aria-label={t('重做')}
+            title={t('重做')}
             disabled={!history.canRedo || busy}
             onClick={() =>
               void perform(() => api<Project>('history/redo', { baseRevision: project.revision }))
             }
           />
           <span className="top-divider" />
-          <Button icon="link" onClick={() => setModal('connect')}>
-            <span className="hide-small">连接 Agent</span>
+          <Button icon="link" aria-label={t('连接 Agent')} onClick={() => setModal('connect')}>
+            <span className="hide-small">{t('连接 Agent')}</span>
           </Button>
-          <Button className="primary" icon="download" onClick={() => setModal('export')}>
-            导出<span className="hide-small">拍摄包</span>
+          <Button
+            className="primary"
+            icon="download"
+            aria-label={t('导出拍摄包')}
+            onClick={() => setModal('export')}
+          >
+            {t('导出')}
+            <span className="hide-small">{t('拍摄包')}</span>
           </Button>
+          <LanguageSelector />
         </nav>
       </header>
       {error && (
         <div className="error-banner" role="alert">
-          <span>{error}</span>
-          <Button icon="close" aria-label="关闭错误提示" onClick={() => setError('')} />
+          <span>{localizeError(error)}</span>
+          <Button icon="close" aria-label={t('关闭错误提示')} onClick={() => setError('')} />
         </div>
       )}
       <div className="mobile-tabs">
@@ -359,15 +373,15 @@ export function App() {
           active={mobilePanel === 'assets'}
           onClick={() => setMobilePanel(mobilePanel === 'assets' ? null : 'assets')}
         >
-          资源
+          {t('资源')}
         </Button>
-        <span>导演工作台</span>
+        <span>{t('导演工作台')}</span>
         <Button
           icon="move"
           active={mobilePanel === 'inspect'}
           onClick={() => setMobilePanel(mobilePanel === 'inspect' ? null : 'inspect')}
         >
-          检查器
+          {t('检查器')}
         </Button>
       </div>
       <div className="workbody">
@@ -381,6 +395,7 @@ export function App() {
             installedPacks,
             busy,
             perform,
+            command,
             setTime,
             setPlaying,
             addObject,
@@ -391,33 +406,51 @@ export function App() {
             setMobilePanel,
           }}
         />{' '}
-        <section className="stage-area" aria-label="导演画面">
+        <section className="stage-area" aria-label={t('导演画面')}>
           <div className="stage-toolbar">
             <div className="segmented">
               <Button icon="camera" active={mode === 'camera'} onClick={() => setMode('camera')}>
-                摄影机
+                {t('摄影机')}
               </Button>
               <Button icon="cube" active={mode === 'stage'} onClick={() => setMode('stage')}>
-                自由布置
+                {t('自由布置')}
               </Button>
             </div>
             <div className="stage-toolset">
-              {(['translate', 'rotate', 'scale'] as const).map((t, i) => (
+              {(['translate', 'rotate', 'scale'] as const).map((toolName, i) => (
                 <Button
-                  key={t}
+                  key={toolName}
                   icon={(['move', 'rotate', 'scale'] as const)[i]}
-                  active={mode === 'stage' && tool === t}
-                  title={['移动', '旋转', '缩放'][i]}
-                  aria-label={['移动对象', '旋转对象', '缩放对象'][i]}
+                  active={mode === 'stage' && tool === toolName}
+                  title={[t('移动'), t('旋转'), t('缩放')][i]}
+                  aria-label={[t('移动对象'), t('旋转对象'), t('缩放对象')][i]}
                   onClick={() => {
-                    setTool(t);
+                    setTool(toolName);
                     setMode('stage');
                   }}
                 />
               ))}
             </div>
-            <Button className="notes-button" icon="note" onClick={() => setModal('notes')}>
-              批注 <span>{project.notes.length}</span>
+            <select
+              className="snap-selector"
+              aria-label={t('网格吸附')}
+              title={t('网格吸附')}
+              value={snap}
+              onChange={(event) => setSnap(Number(event.target.value))}
+            >
+              <option value={0}>{t('不吸附')}</option>
+              <option value={0.1}>0.1 m</option>
+              <option value={0.5}>0.5 m</option>
+              <option value={1}>1 m</option>
+            </select>
+            <Button
+              className="notes-button"
+              icon="note"
+              aria-label={t('批注')}
+              onClick={() => setModal('notes')}
+            >
+              {t('批注')}
+              <span>{project.notes.length}</span>
             </Button>
           </div>
           <Viewport
@@ -430,6 +463,7 @@ export function App() {
             selection={selection}
             mode={mode}
             tool={tool}
+            snap={snap}
             onSelect={(id) => {
               setSelection(id);
               if (id) setTab('objects');
@@ -441,9 +475,11 @@ export function App() {
           />
           <div className="stage-caption">
             <span>
-              <i /> {currentPack.name} <span className="muted">/</span> {shot.name}
+              <i /> {catalogText(currentPack.name)} <span className="muted">/</span> {shot.name}
             </span>
-            <span>{selection ? `已选择 ${entity?.name ?? ''}` : '先选对象，再编排动作'}</span>
+            <span>
+              {selection ? t('已选择 {p0}', { p0: entity?.name ?? '' }) : t('先选对象，再编排动作')}
+            </span>
           </div>
         </section>
         <InspectorPanel
@@ -488,7 +524,7 @@ export function App() {
         className="hidden-input"
         type="file"
         accept=".json,.zip"
-        aria-label="导入工程文件"
+        aria-label={t('导入工程文件')}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) void importProject(f);
@@ -500,7 +536,7 @@ export function App() {
         className="hidden-input"
         type="file"
         accept=".glb"
-        aria-label="导入 GLB 模型"
+        aria-label={t('导入 GLB 模型')}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) void importModel(f);
@@ -512,7 +548,7 @@ export function App() {
         className="hidden-input"
         type="file"
         accept=".glb"
-        aria-label="替换 GLB 模型"
+        aria-label={t('替换 GLB 模型')}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f && selection) void importModel(f, selection);

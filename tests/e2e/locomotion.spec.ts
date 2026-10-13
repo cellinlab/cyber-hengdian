@@ -7,6 +7,7 @@ test('renders a resting actor after arrival and reproduces the same frame when s
 }) => {
   const project = createProject();
   project.entities = [project.entities[0]];
+  delete project.entities[0].actor; // Exercise the pre-rig legacy locomotion path.
   const shot = project.shots[0];
   shot.camera = {
     from: [0, 1.4, 4],

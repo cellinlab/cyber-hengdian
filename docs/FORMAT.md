@@ -37,3 +37,17 @@ ZIP 包含 project.hengdian.json、motion.mp4、三张参考关键帧、逐帧 c
 manifest 包含帧数、实际时长、来源工程版本、坐标单位、资产声明、每个输入文件的 SHA-256；不把生成服务的输入兼容性自动等同于控制效果。ZIP 导入在恢复工程前上传所带 GLB。完整控制通道最多 720 帧，避免首版内存打包超出合理范围。
 
 可运行 `npx tsx tools/verify-shooting-pack.ts path/to/pack.zip` 核验交接包。校验器检查文件哈希、实际 MP4 帧数与帧率、逐帧摄影机和工程求值、PNG 通道及对象 ID 映射；需要 FFprobe（可用 `FFPROBE_PATH` 指定）。这些检查不替代构图、遮挡、动作与故事连续性的画面复核。
+
+## Articulated actors and procedural sets
+
+Additive fields keep existing `hengdian/1` documents readable. An `actor` entity may contain `actor: {pose, action, speed, phase}`. Missing `actor` retains the legacy figure; new figures receive a neutral rig. `pose` contains a metre `rootOffset` and a full map of 17 joint XYZ Euler angles in degrees. Joint-specific constraints are discoverable in `/api/catalog.jointDefinitions`; speed is 0–4 cycles/second and phase is 0–1 cycle. These are explicit FK controls, not a physics rig.
+
+`shot.poseTracks[entityId]` contains sorted unique `{time,pose}` keys. A nonempty pose track overrides the entire procedural action for that shot and holds at its endpoints. Pose interpolation is linear within joint limits; unrestricted root angles take the shorter path. Entity transform tracks remain independent, so a walking cycle does not move the actor across the stage by itself.
+
+Transactions add or replace a pose key with `pose.set {shotId,entityId,key}`, and remove one with `pose.remove {shotId,entityId,time}`. Both enforce actor locks; keys must remain within the shot. Removing/converting a rigged actor clears dangling pose tracks. Invalid edits fail atomically. The UI saves the currently evaluated pose, so a key captures what is visible at that instant.
+
+Setpieces use `kind: "setpiece"` and a supported `modelId`; each is one independently editable entity. `environment: "empty"` provides a neutral floor for modular scenes. Model IDs, dimensions, anchors, source and license are catalog metadata, documented in [Asset Library](ASSET-LIBRARY.md). Scene and assembly factories create fresh IDs; reusable assemblies do not create permanent group parents.
+
+`GET /api/catalog` includes `assets`, `assemblies`, `sceneTemplates`, `posePresets` and `jointDefinitions`. `POST /api/scenes/:id/instantiate` takes `{baseRevision}` and replaces the project. `POST /api/assemblies/:id/instantiate` takes `{baseRevision,requestId,position?}` and appends an atomic group; identical request arguments replay idempotently within the Store receipt window. Conflicts require rereading.
+
+The handoff manifest records `hengdian-humanoid/1` and `hengdian-setpieces/1` runtime provenance plus referenced model IDs. Procedural geometry is recreated by the compatible application and is not currently converted into standalone meshes in the ZIP. The project preserves exact pose and model data; future incompatible rig or geometry changes require explicit version migration.

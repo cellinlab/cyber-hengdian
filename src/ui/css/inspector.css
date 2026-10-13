@@ -221,3 +221,55 @@
 .key-list button:last-child {
   opacity: 0.6;
 }
+.actor-inspector {
+  border-top: 1px solid var(--line);
+  margin-top: 18px;
+  padding-top: 3px;
+}
+.joint-controls {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+.joint-axis {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 54px;
+  align-items: center;
+  gap: 6px;
+}
+.joint-axis > label {
+  color: var(--muted);
+  font-size: 10px;
+}
+.joint-axis > input {
+  padding: 0;
+  accent-color: var(--accent);
+}
+.joint-axis .field {
+  margin: 0;
+}
+.joint-axis .field > span {
+  display: none;
+}
+.joint-axis .field input {
+  padding: 6px;
+  text-align: right;
+}
+.pose-key-list {
+  display: grid;
+  gap: 4px;
+  margin-top: 9px;
+}
+.pose-key-list > div {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.pose-key-list > div > button:first-child {
+  margin-right: auto;
+  color: var(--accent);
+}
+.pose-track-notice {
+  border-left: 2px solid var(--accent);
+  padding-left: 9px;
+}
