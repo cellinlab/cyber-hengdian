@@ -40,4 +40,4 @@ The initial 30 assets are compact original stage models. They are not a photorea
 
 ## New priority: parts and appearance references
 
-The creator's vehicle example exposes a gap between object-level IDs and controllable semantic parts. The proposed next capability is [part structure control](PART-CONTROL.md): stable part labels, visible-surface mask sequences and part-bound appearance references, with honest downstream capability reporting. This is a proposed extension, not an implemented feature of the current wave.
+The creator's vehicle example exposes a gap between object-level IDs and controllable semantic parts. The proposed next capability is [part structure control](PART-CONTROL.md): stable part labels, visible-surface mask sequences and part-bound appearance references, with honest downstream capability reporting. The first parts/reference implementation is now available; see docs/PARTS.md for supported scope and docs/showcase/PARTS-VERIFICATION.md for actual evidence.

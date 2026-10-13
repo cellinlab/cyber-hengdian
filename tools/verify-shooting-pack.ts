@@ -8,6 +8,7 @@ import { inflateSync } from 'node:zlib';
 import { unzipSync, strFromU8 } from 'fflate';
 import { projectSchema } from '../src/core/schema';
 import { evaluate } from '../src/core/project';
+import { getPartMap } from '../src/core/parts';
 
 function check(condition: unknown, message: string): asserts condition {
   if (!condition) throw Error(message);
@@ -185,6 +186,117 @@ export function verifyPackFiles(files: Record<string, Uint8Array>) {
         `GLB content hash mismatch: ${entity.asset}`,
       );
     }
+  const expectedPartMap = getPartMap(project);
+  const parts = manifest.parts;
+  const partMaskCoverage: Record<string, number> = {};
+  if (parts) {
+    check(JSON.stringify(parts.mapping) === JSON.stringify(expectedPartMap), 'Part map mismatch');
+    const frames = Array.from({ length: count }, (_, i) => String(i).padStart(6, '0'));
+    const selected = parts.masks as { entityId: string; partId: string; frameSequence: string }[];
+    check(
+      Array.isArray(selected) && selected.length > 0 && selected.length <= 16,
+      'Invalid mask selection',
+    );
+    check(
+      new Set(selected.map((m) => m.entityId + '/' + m.partId)).size === selected.length,
+      'Duplicate masks',
+    );
+    const expected = frames
+      .flatMap((frame) => [
+        'part-id/' + frame + '.png',
+        ...selected.map((m) => `masks/${m.entityId}/${m.partId}/${frame}.png`),
+      ])
+      .sort();
+    check(
+      JSON.stringify(
+        Object.keys(files)
+          .filter((n) => n.startsWith('part-id/') || n.startsWith('masks/'))
+          .sort(),
+      ) === JSON.stringify(expected),
+      'Part frame sequence mismatch',
+    );
+    const allowed = new Set([0, ...expectedPartMap.map((p) => p.value)]);
+    for (const frame of frames) {
+      const ids = decodePng(files['part-id/' + frame + '.png']);
+      check(
+        ids.width === manifest.width && ids.height === manifest.height,
+        'Part ID dimensions mismatch',
+      );
+      for (let i = 0; i < ids.pixels.length; i += ids.channels)
+        check(
+          allowed.has((ids.pixels[i] << 16) | (ids.pixels[i + 1] << 8) | ids.pixels[i + 2]),
+          'Unknown part ID',
+        );
+      for (const selection of selected) {
+        const entry = expectedPartMap.find(
+          (p) => p.entityId === selection.entityId && p.partId === selection.partId,
+        );
+        check(entry, 'Unknown selected part');
+        check(
+          selection.frameSequence === `masks/${selection.entityId}/${selection.partId}/%06d.png`,
+          'Mask path mapping mismatch',
+        );
+        const name = `masks/${selection.entityId}/${selection.partId}/${frame}.png`,
+          mask = decodePng(files[name]);
+        check(mask.width === ids.width && mask.height === ids.height, 'Mask dimensions mismatch');
+        let white = 0;
+        for (let pixel = 0; pixel < ids.width * ids.height; pixel++) {
+          const i = pixel * ids.channels,
+            j = pixel * mask.channels;
+          const value = (ids.pixels[i] << 16) | (ids.pixels[i + 1] << 8) | ids.pixels[i + 2];
+          const expected = value === entry.value ? 255 : 0;
+          check(
+            mask.pixels[j] === expected &&
+              mask.pixels[j + 1] === expected &&
+              mask.pixels[j + 2] === expected,
+            'Mask differs from visible Part ID: ' + name,
+          );
+          if (mask.channels === 4) check(mask.pixels[j + 3] === 255, 'Transparent part mask');
+          if (expected === 255) white++;
+        }
+        if (expectedKeys.includes(Number(frame))) partMaskCoverage[name] = white;
+      }
+    }
+  } else
+    check(
+      !Object.keys(files).some((n) => n.startsWith('part-id/') || n.startsWith('masks/')),
+      'Unexpected part masks',
+    );
+  for (const reference of project.references ?? []) {
+    const bytes = files['references/' + reference.asset];
+    check(bytes, 'Missing reference image: ' + reference.asset);
+    check(hash(bytes) === reference.asset.split('.')[0], 'Reference content hash mismatch');
+  }
+  if (manifest.references !== undefined || (project.references ?? []).length) {
+    check(
+      JSON.stringify(manifest.references) ===
+        JSON.stringify(
+          (project.references ?? []).map((ref) => ({ ...ref, path: 'references/' + ref.asset })),
+        ),
+      'Reference metadata mismatch',
+    );
+    const referenceData = json('references.json');
+    check(
+      JSON.stringify(referenceData.references) === JSON.stringify(project.references ?? []),
+      'Reference handoff mismatch',
+    );
+    check(
+      JSON.stringify(referenceData.bindings) ===
+        JSON.stringify(
+          project.entities.map((e) => ({
+            entityId: e.id,
+            referenceIds: e.referenceIds ?? [],
+            parts: (e.parts ?? []).map((part) => ({
+              partId: part.id,
+              name: part.name,
+              referenceIds: part.referenceIds ?? [],
+              note: part.note ?? '',
+            })),
+          })),
+        ),
+      'Reference binding handoff mismatch',
+    );
+  }
   check(files['motion.mp4']?.length > 0, 'Missing motion.mp4');
   return {
     projectId: project.id,
@@ -201,6 +313,9 @@ export function verifyPackFiles(files: Record<string, Uint8Array>) {
     observedIds: [...visibleIds].sort((a, b) => a - b),
     depthRange: controls ? [depthMin, depthMax] : null,
     sampleCoverage,
+    partMaskCoverage,
+    partMaskCount: parts?.masks?.length ?? 0,
+    appearanceReferences: (project.references ?? []).length,
     visualReview:
       'Required separately: pixel counts do not establish framing, visibility, movement quality or story continuity.',
   };

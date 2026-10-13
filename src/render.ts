@@ -1,3 +1,4 @@
+import type { PartSelection } from './core/parts';
 import { Stage, type Pass } from './runtime/stage';
 import { projectSchema, type Project } from './core/schema';
 export async function initRender() {
@@ -7,6 +8,9 @@ export async function initRender() {
   const stage = new Stage(canvas, false);
   let project: Project;
   const api = {
+    nodes(entityId: string) {
+      return stage.nodes(entityId);
+    },
     inspect() {
       return stage.inspectFrame();
     },
@@ -17,11 +21,11 @@ export async function initRender() {
       await stage.load(project);
       return true;
     },
-    frame(shotId: string, time: number, pass: Pass = 'rgb') {
+    frame(shotId: string, time: number, pass: Pass = 'rgb', selection?: PartSelection) {
       const shot = project.shots.find((s) => s.id === shotId);
       if (!shot) throw Error('Shot not found');
       stage.update(shot, time);
-      stage.render(stage.camera, pass);
+      stage.render(stage.camera, pass, selection);
       return canvas.toDataURL('image/png').split(',')[1];
     },
   };

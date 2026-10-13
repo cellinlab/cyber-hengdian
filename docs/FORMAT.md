@@ -51,3 +51,9 @@ Setpieces use `kind: "setpiece"` and a supported `modelId`; each is one independ
 `GET /api/catalog` includes `assets`, `assemblies`, `sceneTemplates`, `posePresets` and `jointDefinitions`. `POST /api/scenes/:id/instantiate` takes `{baseRevision}` and replaces the project. `POST /api/assemblies/:id/instantiate` takes `{baseRevision,requestId,position?}` and appends an atomic group; identical request arguments replay idempotently within the Store receipt window. Conflicts require rereading.
 
 The handoff manifest records `hengdian-humanoid/1` and `hengdian-setpieces/1` runtime provenance plus referenced model IDs. Procedural geometry is recreated by the compatible application and is not currently converted into standalone meshes in the ZIP. The project preserves exact pose and model data; future incompatible rig or geometry changes require explicit version migration.
+
+## Semantic parts and appearance images
+
+Optional entity `parts`, entity `referenceIds`, and project `references` add [parts and appearance binding](PARTS.md) to the existing schema. A part groups disjoint actual mesh child-index paths; duplicate node names are harmless. Each path can belong to one part. Reference IDs must exist; deletion clears bindings, and geometry replacement clears stale part definitions. The server validates actual paths before saving. Semantic identity is `(entityId,partId)`, and snapshot manifest maps it to lossless RGB integer values.
+
+Exports with selected parts contain `part-id/` plus per-part `masks/` frame sequences, original `references/` image assets and `references.json` role/binding data. Files share camera/time/resolution; visible-surface occlusion is preserved. Images are content addressed, and their exact original bytes must accompany complete saved projects. See [verification](showcase/PARTS-VERIFICATION.md) for real runtime, host and restore evidence.

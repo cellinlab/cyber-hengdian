@@ -287,7 +287,7 @@ describe('real HTTP service through MCP stdio', () => {
 
   it('discovers scene and rig capabilities, appends assemblies idempotently and directs a pose', async () => {
     const catalog = textData(await client.callTool({ name: 'list_catalog', arguments: {} }));
-    expect(catalog.assets).toHaveLength(30);
+    expect(catalog.assets).toHaveLength(31);
     expect(catalog.sceneTemplates).toHaveLength(5);
     expect(catalog.jointDefinitions).toHaveLength(17);
     const before = textData(

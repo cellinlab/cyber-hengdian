@@ -2,88 +2,91 @@
 
 **Build a set once. Let people and AI keep directing it.**
 
-[简体中文](README.md) · English
+[简体中文](README.md) · [Quick start](#quick-start) · [Three-part truck](examples/truck-parts/README.md) · [Agent setup](docs/AGENTS.md) · [Contributing](CONTRIBUTING.md)
 
-Open virtual-production infrastructure for creators and AI agents. Arrange editable sets, pose actors, plan camera movement, then export a reproducible shooting pack. The browser director, CLI and MCP share one validated project.
+Open virtual-production infrastructure for video creators and AI agents. Arrange a set, direct actors and cameras, assign semantic parts and appearance references, then export an editable shooting pack for your video workflow.
 
-This is a local previsualization workstation. It does not generate finished AI videos by itself.
+![Original three-part truck rendered in the virtual set](public/readme/truck-hero.png)
 
-![Director overview](public/readme/module-overview.jpg)
+## Quick start
 
-## Run locally
-
-Requires Node.js 22.12+. Image previews and video export require Chrome or Chromium; video encoding also requires FFmpeg.
+Requires **Node.js 22.12+**. Image previews require Chrome / Chromium; video encoding also requires FFmpeg.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:4317. The interface supports English and Simplified Chinese; choose a language in the header. Your scene names and notes stay as you wrote them.
+Open **http://127.0.0.1:4317**. The interface supports English and Simplified Chinese.
 
-On macOS, the installed Google Chrome is used by default. Elsewhere, run `npx playwright install chromium` or set `CHROME_PATH`. Set `FFMPEG_PATH` if FFmpeg is not on your PATH. `PORT` chooses another local port; `HENGDIAN_DATA` chooses an independent workspace. Your saved work lives in `.hengdian/` by default—keep it when updating code.
+On macOS, installed Google Chrome is used by default. Elsewhere, run `npx playwright install chromium` or set `CHROME_PATH`. Set `FFMPEG_PATH` to choose FFmpeg, `PORT` to choose a service port, and `HENGDIAN_DATA` to choose a workspace. Saved work lives in the Git-ignored `.hengdian/` directory by default; preserve it when updating code.
 
 ```sh
 npm run build
 npm start
 ```
 
-Production mode is still a local service. Public multi-tenant hosting is not configured.
+## From an idea to a shooting pack
 
-## Direct your first scene
+1. **Build a set.** Choose a complete scene, add models or assemblies, or import a self-contained GLB.
+2. **Direct the performance.** Adjust joints and poses. Save position and pose keys for each shot.
+3. **Plan the camera.** Choose a recipe, set the opening and closing frame, and follow a stable subject.
+4. **Assign parts and appearance.** Group meshes into a cab, cargo body or wheels, then bind appearance images to the object or individual parts.
+5. **Inspect and export.** Play the previs, inspect part IDs and black-and-white masks, then export the project, motion, control passes and reference assets.
 
-1. Open the library and select a complete scene: **rural road, urban street, classroom, hospital or Paris plaza**. Replacement requires confirmation; undo restores your previous scene.
-2. Search the **30 built-in models**, add a prop or insert a reusable assembly. Each inserted object remains independently editable.
-3. Select an actor. Choose a pose, adjust individual joints, or select a procedural walk, run, wave, talk or idle action. New actors use a 17-joint hierarchy. Older projects retain their original actor style until explicitly upgraded.
-4. Save pose keys at selected times to direct a performance. Pose tracks override procedural actions for that shot. Position keys control travel independently.
-5. Select a camera recipe, adjust the frame, play the shot and inspect contact and framing. Export the shooting pack.
+![Actual director with part selection, mask preview and appearance references](public/readme/parts-director.png)
 
-The original courtyard, product studio and exterior sets, nine camera recipes and self-contained GLB import remain available. Full transforms, optimistic revision checking, atomic operations, undo/redo, annotations and disk recovery are shared across interfaces.
+## Features
 
-Built-in models are original MIT-licensed procedural geometry. The Eiffel tower is a simplified miniature, not a scan or an engineering model. See the [asset library](docs/ASSET-LIBRARY.md) for dimensions, pivots, anchors and extension contracts.
+| Task | Available tools |
+| --- | --- |
+| Set building | Courtyard, product studio and exterior sets; rural road, urban street, classroom, hospital and Paris plaza templates; original procedural models, 4 assemblies and GLB import |
+| Actor direction | 17 joint groups, 8 pose presets, walk/run/wave/talk/idle actions; separate position and pose tracks |
+| Camera direction | 9 camera recipes, free-layout and camera views, stable subject following and timed notes |
+| Local constraints | Semantic parts, colored Part ID, individual black-and-white masks, object and part appearance references; [guide](docs/PARTS.md) |
+| Continued editing | Atomic versioned operations, undo/redo, conflict detection and disk recovery; browser, CLI and MCP share one project |
+| Tool handoff | Editable project, referenced assets, MP4 previs, keyframes, per-frame camera data and checksums; optional depth, object-ID and part-mask frames |
 
-![Classroom, articulated actor and pose timeline in the English director](public/readme/director-expanded.png)
+Masks describe visible boundaries; appearance images describe materials, colors and style. Downstream acceptance and structural consistency need their own validation. Hand off appearance references alongside previs so the generator has a visual target beyond the blockout geometry and procedural motion.
 
-## Connect an agent
+## Reusable examples
 
-Start the local service, then launch the MCP server through your agent host:
+| Example | What to explore |
+| --- | --- |
+| [Three-part truck](examples/truck-parts/README.md) | Mesh grouping, occlusion, part masks, appearance binding and shooting-pack recovery |
+| [Classroom actors](examples/actor-classroom/README.md) | Real Codex setup, joint-pose tracks, visual inspection and 720p export |
+| [Courtyard meeting](docs/CODEX.md) | Natural-language scene building, camera changes and export |
+| [Product and road scenes](examples/showcase/README.md) | Product framing, two-person blocking, camera movement and generator handoff |
+
+The previous [TapNow experiments](docs/showcase/TAPNOW.md) record composition drift, mannequin appearance and mechanical walking. Completion and fulfillment of directing intent are documented separately.
+
+## Direct with an agent
+
+Start the local service, then have your agent host launch the stdio MCP server:
 
 ```sh
 npm run mcp
 ```
 
-MCP uses stdio. Configure `HENGDIAN_URL` when using a non-default service port. The [Agent guide](docs/AGENTS.md) contains host configuration; the [director Skill](.agents/skills/direct-hengdian/SKILL.md) describes the workflow.
-
-Useful tools include `read_project`, `list_catalog`, `use_scene_template`, `add_assembly`, `apply_operations`, `preview_shot`, `create_export` and `list_exports`. Read the current revision before writing; do not silently retry conflicts. Pose operations use the same validated project schema as the UI.
+Set `HENGDIAN_URL` when using another service port. The [Agent guide](docs/AGENTS.md) covers host configuration; the [director Skill](.agents/skills/direct-hengdian/SKILL.md) organizes reading, editing, previewing and exporting. Projects and assets remain independent open data.
 
 ```sh
 npm run cli -- --help
-npm run cli -- catalog
 npm run cli -- status
+npm run cli -- catalog
 ```
 
-The new [classroom actor case](examples/actor-classroom/README.md) verifies scene setup, pose keys, actual previews and a separately checked 720p export through a real Codex run.
-
-The [Codex example](docs/CODEX.md) records a real natural-language directing run and its limitations. DeepSeek harness compatibility still needs an independent host test; MCP availability alone does not prove it.
-
-## What the shooting pack contains
-
-- Editable project, actor poses and motion tracks.
-- Referenced GLB files, reference MP4 and representative keyframes.
-- Per-frame camera data and checksums; optional depth and object-ID frames.
-- Procedural-runtime provenance for built-in actors and setpieces.
-
-Built-in geometry is reconstructed by a compatible Cyber Hengdian runtime; standalone GLBs for procedural models are not included. A downstream video generator may use the reference video, but camera/depth/ID support depends on that workflow.
-
-![Real previs examples](public/readme/scene-examples.jpg)
-
-The previous [TapNow experiments](docs/showcase/TAPNOW.md) generated product and road clips. The product composition drifted and road characters retained their mannequin appearance. Those results are documented as limitations, not a claim of automatic photoreal conversion. TapNow is not directly integrated into this app.
+An authenticated Codex CLI can run `npm run codex:direct -- examples/codex-courtyard/01-stage.md`. It invokes a real model and changes the connected workspace; use an independent directory for experiments. See [Codex verification](docs/CODEX.md) for tested scope. Other MCP hosts and DeepSeek Harness still need independent testing.
 
 ## Extend and contribute
 
-See [CONTRIBUTING](CONTRIBUTING.md), the [project format](docs/FORMAT.md), [asset library](docs/ASSET-LIBRARY.md), [internationalization](docs/INTERNATIONALIZATION.md) and [expansion plan](specs/DIRECTOR-EXPANSION.md). The [director landscape study](docs/research/DIRECTOR-LANDSCAPE.md) explains which mechanisms informed the design.
+Contribute a model, scene, camera recipe or reusable example. Resource packs contain data only. External models need accurate source and redistribution-license records.
 
-Core data and deterministic evaluation live in `src/core/`; Three.js geometry lives in `src/runtime/`; the director lives in `src/ui/`. Resource packs are data, not executable plugins. External models need accurate redistribution rights and provenance.
+- [Asset library](docs/ASSET-LIBRARY.md): units, pivots, assemblies and original procedural geometry.
+- [Parts and references](docs/PARTS.md): grouping, mask semantics and reference handoff.
+- [Project format](docs/FORMAT.md) · [Architecture](specs/ARCHITECTURE.md): shared data and deterministic rendering.
+- [Contributing](CONTRIBUTING.md) · [Internationalization](docs/INTERNATIONALIZATION.md): development, verification and translation.
+- [Expansion plan](specs/DIRECTOR-EXPANSION.md) · [Director research](docs/research/DIRECTOR-LANDSCAPE.md): current capabilities and future directions.
 
 ```sh
 npm run check
@@ -92,11 +95,13 @@ npm run test:e2e
 
 ## Current limits
 
-This is an early local workstation, not a full DCC, physics simulator or cloud collaboration platform. Joint controls are FK; there is no IK, automatic foot lock, grip constraint or arbitrary skeleton retargeting. Procedural walking runs in place unless you add root position keys. Camera paths currently interpolate between start and end positions. GLBs preserve their original units/pivots and use their first animation clip. Depth is linear 8-bit; transparent surfaces are treated as opaque in control passes. Full control-channel export is limited to 720 frames.
+This is an early local workstation. Finished video generation happens in external tools; TapNow automation and public cloud collaboration are not built in. Actor controls use FK, with no IK, automatic foot lock, grip constraint or general skeleton retargeting. Procedural walking needs position keys for travel. Camera paths interpolate between start and end positions.
+
+Control passes output visible surfaces and treat transparent geometry as opaque. Depth is linear 8-bit; full control-channel export is limited to 720 frames. GLBs retain their units and pivots and use the first animation by default. Built-in sets are previs geometry reconstructed by a compatible runtime; standalone GLBs are not included in shooting packs. See the [format guide](docs/FORMAT.md).
 
 
 ## Author and license
 
-Created by **Cell**. Visit [cellinlab.com](https://cellinlab.com/), [Maker Matrix](https://zaowujuzhen.com/about), or [@cellinlab](https://x.com/cellinlab). The original author/contact section is preserved in the [Chinese README](README.md#关于作者).
+Created by **Cell**. Visit [cellinlab.com](https://cellinlab.com/), [Maker Matrix](https://zaowujuzhen.com/about), or [@cellinlab](https://x.com/cellinlab). The original contact and sponsorship section is preserved in the [Chinese README](README.md#关于作者).
 
 [MIT](LICENSE). Keep the original copyright and license notice when reusing the code.

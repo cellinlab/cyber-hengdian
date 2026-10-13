@@ -1,3 +1,4 @@
+import { truckParts } from './parts';
 import { identity, uid, type Entity, type Project, type Vec3 } from './schema';
 import { newEntity, newShot } from './catalog';
 import { sampleActor } from './actor';
@@ -57,6 +58,16 @@ const entry = (
 });
 const text = (zh: string, en: string): LocalizedText => ({ zh, en });
 export const assetLibrary: AssetDefinition[] = [
+  entry(
+    'truck',
+    '三部件卡车',
+    'Three-part truck',
+    'street',
+    [2.5, 2.8, 6.5],
+    '#b8c0c5',
+    text('原创车头、车厢与车轮三部件卡车。', 'Original truck with separate cab, cargo and wheels.'),
+    ['vehicle', '车辆', '卡车'],
+  ),
   entry(
     'eiffel-tower',
     '埃菲尔铁塔 · 缩尺',
@@ -387,6 +398,7 @@ export function newSetpiece(id: ModelId, position: Vec3 = [0, 0, 0]): Entity {
   return {
     id: uid(),
     kind: 'setpiece',
+    ...(id === 'truck' ? { parts: structuredClone(truckParts) } : {}),
     modelId: id,
     name: asset.name.zh,
     color: asset.color,

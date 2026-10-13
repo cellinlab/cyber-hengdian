@@ -1,116 +1,104 @@
 <!-- bip:project:start -->
 # 赛博横店 · Cyber Hengdian
 
-[简体中文](README.md) · [English](README.en.md)
+**搭一次片场，让人和 AI 接着拍。**
 
-**搭一次片场，让不同的人和 AI 接着拍。**
+[English](README.en.md) · [快速开始](#快速开始) · [三部件卡车案例](examples/truck-parts/README.md) · [Agent 接入](docs/AGENTS.md) · [贡献指南](CONTRIBUTING.md)
 
-面向创作者与 AI Agent 的开源虚拟片场基础设施。场景、演员、动作和镜头保存在开放工程中；网页导演台、CLI 和 MCP 修改同一份作品。
+面向视频创作者与 AI Agent 的开源虚拟片场基础设施。在浏览器中搭场景、调人物与镜头，把空间、动作、部件标记和外观参考保存为可继续编辑的工程，再导出给视频制作流程使用。
 
-当前是本地可运行的 0.1 基础版本。生成结果依赖后续选择的视频工具；本项目不把三维预演称为 AI 成片。
+![原创三部件卡车的真实片场渲染](public/readme/truck-hero.png)
 
-![赛博横店功能全景：真实导演台与六个已实现模块](public/readme/module-overview.jpg)
+## 快速开始
 
-## 开始拍摄
-
-需要 Node.js 22.12+。导出与 Agent 图片预览需要 Chromium / Chrome；视频导出还需要 FFmpeg。
+需要 **Node.js 22.12+**。图片预览需要 Chrome / Chromium；视频导出还需要 FFmpeg。
 
 ```sh
 npm install
 npm run dev
 ```
 
-打开 http://127.0.0.1:4317 。选择片场，布置对象，安排镜头与关键帧，播放检查，再导出拍摄包。
+打开 **http://127.0.0.1:4317**，选择场景并开始拍摄。界面支持简体中文与 English。
 
-macOS 默认使用已安装的 Google Chrome。其他环境可运行 `npx playwright install chromium`，或通过 `CHROME_PATH` 指定浏览器路径；`FFMPEG_PATH` 可指定 FFmpeg 可执行文件。环境变量只影响当前进程，不修改系统配置。
+macOS 默认使用已安装的 Google Chrome。其他环境可运行 `npx playwright install chromium`，或用 `CHROME_PATH` 指定浏览器；用 `FFMPEG_PATH` 指定 FFmpeg。`PORT` 更改端口，`HENGDIAN_DATA` 更改工作空间目录。工程默认保存在被 Git 忽略的 `.hengdian/`，升级代码时保留该目录。
 
 ```sh
 npm run build
 npm start
 ```
 
-生产模式仍是本地服务；未配置公开托管或多人云协作。`PORT` 更改端口，`HENGDIAN_DATA` 更改工作空间目录。默认数据在被 Git 忽略的 `.hengdian/`，不要删除它来升级代码。
+## 从想法到拍摄包
 
-## 当前能力
+1. **搭片场**：选完整场景，加入模型或组合，也可导入自包含 GLB。
+2. **安排表演**：调整人物关节与姿势，把走位和姿态保存为镜头关键帧。
+3. **调镜头**：选择摄影机配方，设置起止构图、跟拍目标和时间。
+4. **标记部件与外观**：把车头、车厢、车轮等网格归入语义部件，绑定整体或部件的外观参考图。
+5. **检查并导出**：播放预演，检查部件 ID 与黑白遮罩，导出工程、视频、控制通道和参考资产。
 
-- 原有三个程序化片场，新增乡村道路、都市街道、教室、医院、巴黎广场五套可编辑场景；30 个原创模型、4 个组合、自包含 GLB 导入、九个镜头配方。
-- 17 组人物关节、8 种姿势预设、行走/奔跑/招手/说话/待机动作；按镜头保存姿态关键帧。新旧人物工程兼容。
-- 中英双语界面、资源搜索与分类、位移吸附；保留用户自己写的工程名、镜头名与备注。
-- 自由布置与摄影机视角，完整姿态编辑、稳定对象跟拍、镜头独立关键帧、时间批注。
-- 版本化原子操作、撤销/重做、落盘恢复、过期编辑冲突拒绝。
-- 可安装的外部数据片场包，版本不可覆盖；模型以内容哈希引用。
-- 拍摄包包含可编辑工程、引用模型、参考 MP4、关键帧、逐帧摄影机数据、校验清单；可选深度与对象 ID 序列。
-- CLI 与 stdio MCP 连接同一服务；配套 Skill 组织读取、导演、预览、检查与导出。
+![真实导演台中的部件选择、遮罩预览与外观参考](public/readme/parts-director.png)
 
-![教室场景、关节演员与姿态轨道：真实英文导演台](public/readme/director-expanded.png)
+## 可以做什么
 
-新增资产的单位、枢轴、许可和扩展约定见 [资产库](docs/ASSET-LIBRARY.md)。先选完整场景，再改演员、道具和镜头；场景替换需要确认，也可撤销。人物姿态轨道优先于程序动作，走位单独由位置关键帧控制。
+| 创作任务 | 已有能力 |
+| --- | --- |
+| 快速搭景 | 庭院、产品摄影棚、室外片场，以及乡村道路、都市街道、教室、医院、巴黎广场；原创程序化模型、4 个组合与 GLB 导入 |
+| 调度人物 | 17 组关节、8 种姿势预设、行走/奔跑/招手/说话/待机；位置与姿态轨道独立编辑 |
+| 安排摄影机 | 9 个镜头配方、自由布置与摄影机视角、稳定对象跟拍、时间批注 |
+| 表达局部约束 | 语义部件标记、彩色 Part ID、逐部件黑白遮罩、整体与部件外观参考绑定；[使用说明](docs/PARTS.md) |
+| 继续编辑 | 版本化原子操作、撤销/重做、冲突检测、落盘恢复；网页、CLI 与 MCP 共享同一份工程 |
+| 交给其他工具 | 可编辑工程、引用资产、参考 MP4、关键帧、逐帧摄影机数据与校验清单；可选深度、对象 ID 与部件遮罩 |
 
-## 给 Agent 使用
+部件遮罩表达画面中可见的边界，外观图表达材质、颜色和风格。下游工具是否接受这些输入、能否保持结构，需要分别验证。参考图与白模预演应共同交接，避免把预演造型和机械动作直接当作成片外观。
 
-先启动服务，再从另一终端运行：
+## 可复用案例
+
+| 案例 | 适合验证什么 |
+| --- | --- |
+| [三部件卡车](examples/truck-parts/README.md) | 网格分组、遮挡、部件遮罩、外观参考与拍摄包恢复 |
+| [教室人物](examples/actor-classroom/README.md) | 真实 Codex 建场、关节姿态轨道、画面检查与 720p 导出 |
+| [庭院会面](docs/CODEX.md) | 从自然语言搭场景，调整镜头并导出拍摄包 |
+| [香水广告与公路电影](examples/showcase/README.md) | 产品构图、双人走位、运镜与生成工具交接 |
+
+以前的 [TapNow 实测](docs/showcase/TAPNOW.md) 记录了产品构图漂移、人物保留木偶造型和机械步态等问题。测试完成与导演意图满足分别记录，供后续创作继续改进。
+
+## 用 Agent 导演
+
+先启动本地服务，再由 Agent 宿主启动 stdio MCP：
+
+```sh
+npm run mcp
+```
+
+通过 `HENGDIAN_URL` 连接其他服务端口。配置见 [Agent 指南](docs/AGENTS.md)，导演流程见 [Skill](.agents/skills/direct-hengdian/SKILL.md)。Skill 组织读取、修改、预览与导出；工程及资源保存在独立开放格式中。
 
 ```sh
 npm run cli -- --help
 npm run cli -- status
-npm run mcp
+npm run cli -- catalog
 ```
 
-MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接入配置见 [Agent 指南](docs/AGENTS.md)，工作流程见 [导演 Skill](.agents/skills/direct-hengdian/SKILL.md)。已有登录的 Codex CLI 可运行 `npm run codex:direct -- examples/codex-courtyard/01-stage.md`；这会调用真实模型并修改当前片场，实验请使用独立工作空间。两轮自然语言导演案例、运行方法和实测边界见 [Codex 接入](docs/CODEX.md)。DeepSeek Harness 仍须独立实测。新增 [教室关节导演案例](examples/actor-classroom/README.md) 已由真实 Codex 建场、设置姿态轨道、查看三帧，并独立完成 720p 拍摄包导出与恢复。
+已有登录的 Codex CLI 可运行 `npm run codex:direct -- examples/codex-courtyard/01-stage.md`。这会调用真实模型并修改连接的工作空间；实验请使用独立目录。Codex 的实际验证范围见 [接入记录](docs/CODEX.md)。其他 MCP 宿主及 DeepSeek Harness 仍需各自实测。
 
-![真实 Codex 导演：同一镜头调整前后的构图](public/readme/codex-camera-iteration.jpg)
+## 扩展与贡献
 
-## 从典型场景开始
+添加模型、场景、镜头配方或案例都可以帮助下一位创作者。资源包仅包含数据，外部模型需准确记录来源与再分发许可。
 
-![香水广告与公路电影：真实 Three.js 预演场景](public/readme/scene-examples.jpg)
-
-| 想拍什么 | 在导演台先确定什么 | 可复用案例 |
-| --- | --- | --- |
-| 庭院会面 · 10 秒三镜头 | 两人站位、来客走位、景别与剪辑节奏 | [真实 Codex 自然语言导演](docs/CODEX.md) |
-| 香水广告 · 6 秒单镜头 | 产品与展台关系、画面占比、侧移推进 | [打开场景工程](examples/showcase/product.hengdian.json) |
-| 公路电影 · 6 秒单镜头 | 双人间距、前进方向、同速后退跟拍 | [打开场景工程](examples/showcase/road.hengdian.json) |
-
-两个新场景是人工编排、可继续编辑的真实预演工程，均已完成 720p 视频及逐帧控制通道导出。导入方法、视频生成提示词和逐项验收点见 [场景指南](examples/showcase/README.md)。
-
-导出 `motion.mp4` 后，可将它交给支持视频参考的生成工具；由生成模型完成外观与材质转译。摄影机数据、深度和 ID 是否能参与控制，取决于下游工作流。本项目当前没有内置 TapNow 自动直连。真实交接限制与结果见 [TapNow 实测记录](docs/showcase/TAPNOW.md)。
-
-## 真实视频生成测试
-
-![真实预演到 TapNow 成片的对照，公路人物仍保留木偶造型](public/readme/tapnow-comparison.jpg)
-
-用同一套预演分别测试 TapNow / Seedance 2.5 视频参考模式。香水和公路各完成一次 720p、约 6 秒的生成，并下载原视频核验；庭院旧版 360p 输入被拒绝，已重导原生 720p 输入，本轮未自动重试。
-
-香水案例保留了产品、两个展台与球体的关系，转译出玻璃和石材质感，但推进幅度偏大，末帧展台下沿被裁切。公路案例保留了双人和服装关系，但人物仍是木偶，步态机械，**未达到真人自然行走目标**。完整记录与交接限制见 [TapNow 实测](docs/showcase/TAPNOW.md)，生成完成不代表每项导演意图都已满足。
-
-## 建设自己的片场
-
-本轮市场调研与取舍见 [导演台研究](docs/research/DIRECTOR-LANDSCAPE.md)，后续 IK、接触约束、镜头路径、动作重定向与社区资源注册表分层见 [扩展规划](specs/DIRECTOR-EXPANSION.md)。
-
-从 [桌面产品示例](examples/tabletop.pack.json) 开始。资源包可以组合模型、对象与镜头，不需要修改运行核心。工程与包格式见 [格式说明](docs/FORMAT.md)，贡献方式见 [CONTRIBUTING](CONTRIBUTING.md)。
-
-## 架构
-
-- `src/core/`：开放数据、操作、插值与验证。
-- `src/runtime/`：Three.js 场景与按时间渲染。
-- `src/ui/`：导演工作台。
-- `server/`：持久化、共享操作服务、资源与导出。
-- `tools/`：CLI / MCP 客户端。
-- `examples/`：可复用片场包。
-
-设计推导见 [目标规格](specs/VISION.md) 和 [架构与交互](specs/ARCHITECTURE.md)。
-
-## 验证
+- [资产库](docs/ASSET-LIBRARY.md)：模型单位、枢轴、组合与原创几何约定。
+- [部件与参考](docs/PARTS.md)：分组、遮罩语义和参考资产交接。
+- [工程格式](docs/FORMAT.md) · [架构](specs/ARCHITECTURE.md)：共享数据与确定性渲染。
+- [贡献指南](CONTRIBUTING.md) · [国际化](docs/INTERNATIONALIZATION.md)：开发、验证与翻译。
+- [扩展规划](specs/DIRECTOR-EXPANSION.md) · [导演台调研](docs/research/DIRECTOR-LANDSCAPE.md)：已实现能力与后续方向。
 
 ```sh
 npm run check
 npm run test:e2e
 ```
 
-本轮检查与画面证据见 [扩展验证记录](docs/showcase/EXPANSION-VERIFICATION.md)。核心、真实 HTTP 和 MCP 协议测试使用独立临时工作空间。浏览器验证独立运行，不修改当前拍摄工程。模板检查同时保护原作者区和资产。
-
 ## 当前边界
 
-首版为单个本地工作空间，不是公开多租户服务。场景与物体为预演精度；人物是 FK 关节编辑，尚无 IK、自动脚底锁定、手持约束；没有通用物理、任意骨骼重定向、完整剪辑或付费生成服务。程序行走默认原地循环，需要位置关键帧安排位移。GLB 保留原单位和枢轴、默认播放第一个动画；请在建模工具中整理模型。深度是线性 8-bit 参考，透明几何控制通道按不透明表面输出；完整控制通道最多 720 帧。镜头轨迹当前采用起止点线性插值。埃菲尔铁塔是约 6.45 米高的原创简化缩尺布景；内置模型依赖兼容运行时重建，拍摄包暂不包含它们的独立 GLB 文件。
+当前为本地优先的早期工作台。视频生成由外部工具完成，尚无内置 TapNow 自动直连或公开云端协作。人物使用 FK 关节，尚无 IK、自动脚底锁定、手持约束或通用骨骼重定向；程序行走需要位置关键帧安排位移。摄影机路径采用起止点插值。
+
+控制通道按不透明几何输出可见表面；深度为线性 8-bit，完整控制通道最多 720 帧。GLB 保留原单位与枢轴，默认使用首个动画。内置布景为预演精度，通过兼容运行时重建；拍摄包不包含它们的独立 GLB。详细格式见 [工程说明](docs/FORMAT.md)。
 
 <!-- bip:project:end -->
 

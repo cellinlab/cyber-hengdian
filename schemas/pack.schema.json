@@ -68,10 +68,13 @@
           "$ref": "#/$defs/__schema9"
         },
         "shots": {
-          "$ref": "#/$defs/__schema25"
+          "$ref": "#/$defs/__schema31"
         },
         "notes": {
-          "$ref": "#/$defs/__schema29"
+          "$ref": "#/$defs/__schema35"
+        },
+        "references": {
+          "$ref": "#/$defs/__schema37"
         }
       },
       "required": [
@@ -200,20 +203,26 @@
         "locked": {
           "$ref": "#/$defs/__schema18"
         },
-        "actor": {
+        "parts": {
           "$ref": "#/$defs/__schema19"
         },
+        "referenceIds": {
+          "$ref": "#/$defs/__schema24"
+        },
+        "actor": {
+          "$ref": "#/$defs/__schema25"
+        },
         "modelId": {
-          "$ref": "#/$defs/__schema21"
+          "$ref": "#/$defs/__schema27"
         },
         "asset": {
-          "$ref": "#/$defs/__schema22"
+          "$ref": "#/$defs/__schema28"
         },
         "source": {
-          "$ref": "#/$defs/__schema23"
+          "$ref": "#/$defs/__schema29"
         },
         "license": {
-          "$ref": "#/$defs/__schema24"
+          "$ref": "#/$defs/__schema30"
         }
       },
       "required": [
@@ -312,10 +321,73 @@
       "type": "boolean"
     },
     "__schema19": {
+      "minItems": 1,
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema20"
+      }
+    },
+    "__schema20": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema21"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "members": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema22"
+          }
+        },
+        "referenceIds": {
+          "$ref": "#/$defs/__schema23"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "members"
+      ],
+      "additionalProperties": false
+    },
+    "__schema21": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "__schema22": {
+      "type": "string",
+      "maxLength": 160,
+      "pattern": "^\\d+(\\/\\d+)*$"
+    },
+    "__schema23": {
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema21"
+      }
+    },
+    "__schema24": {
+      "$ref": "#/$defs/__schema23"
+    },
+    "__schema25": {
       "type": "object",
       "properties": {
         "pose": {
-          "$ref": "#/$defs/__schema20"
+          "$ref": "#/$defs/__schema26"
         },
         "action": {
           "default": "none",
@@ -350,7 +422,7 @@
       ],
       "additionalProperties": false
     },
-    "__schema20": {
+    "__schema26": {
       "type": "object",
       "properties": {
         "rootOffset": {
@@ -889,7 +961,7 @@
       ],
       "additionalProperties": false
     },
-    "__schema21": {
+    "__schema27": {
       "type": "string",
       "enum": [
         "eiffel-tower",
@@ -921,30 +993,31 @@
         "stairs",
         "cafe-table",
         "chair",
-        "floor-slab"
+        "floor-slab",
+        "truck"
       ]
     },
-    "__schema22": {
+    "__schema28": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}\\.glb$"
     },
-    "__schema23": {
+    "__schema29": {
       "type": "string",
       "maxLength": 500
     },
-    "__schema24": {
+    "__schema30": {
       "type": "string",
       "maxLength": 160
     },
-    "__schema25": {
+    "__schema31": {
       "minItems": 1,
       "maxItems": 100,
       "type": "array",
       "items": {
-        "$ref": "#/$defs/__schema26"
+        "$ref": "#/$defs/__schema32"
       }
     },
-    "__schema26": {
+    "__schema32": {
       "type": "object",
       "properties": {
         "id": {
@@ -1010,7 +1083,7 @@
             "maxItems": 200,
             "type": "array",
             "items": {
-              "$ref": "#/$defs/__schema27"
+              "$ref": "#/$defs/__schema33"
             }
           }
         },
@@ -1027,7 +1100,7 @@
             "maxItems": 200,
             "type": "array",
             "items": {
-              "$ref": "#/$defs/__schema28"
+              "$ref": "#/$defs/__schema34"
             }
           }
         }
@@ -1042,7 +1115,7 @@
       ],
       "additionalProperties": false
     },
-    "__schema27": {
+    "__schema33": {
       "type": "object",
       "properties": {
         "position": {
@@ -1069,7 +1142,7 @@
       ],
       "additionalProperties": false
     },
-    "__schema28": {
+    "__schema34": {
       "type": "object",
       "properties": {
         "time": {
@@ -1078,7 +1151,7 @@
           "maximum": 120
         },
         "pose": {
-          "$ref": "#/$defs/__schema20"
+          "$ref": "#/$defs/__schema26"
         }
       },
       "required": [
@@ -1087,14 +1160,14 @@
       ],
       "additionalProperties": false
     },
-    "__schema29": {
+    "__schema35": {
       "maxItems": 1000,
       "type": "array",
       "items": {
-        "$ref": "#/$defs/__schema30"
+        "$ref": "#/$defs/__schema36"
       }
     },
-    "__schema30": {
+    "__schema36": {
       "type": "object",
       "properties": {
         "id": {
@@ -1129,6 +1202,54 @@
         "entityId",
         "time",
         "text"
+      ],
+      "additionalProperties": false
+    },
+    "__schema37": {
+      "maxItems": 256,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema38"
+      }
+    },
+    "__schema38": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema21"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "asset": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}\\.(png|jpg|webp)$"
+        },
+        "purpose": {
+          "type": "string",
+          "const": "appearance"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "source": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "license": {
+          "type": "string",
+          "maxLength": 160
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "asset",
+        "purpose",
+        "description"
       ],
       "additionalProperties": false
     }

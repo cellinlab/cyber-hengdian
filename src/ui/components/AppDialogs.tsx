@@ -1,5 +1,5 @@
 import { useI18n, localizeError } from '../i18n';
-import type { RefObject } from 'react';
+import { useState, type RefObject } from 'react';
 import { recipes, newShot } from '../../core/catalog';
 import { uid, type Project, type Entity, type Shot } from '../../core/schema';
 import type { Set, InputRef, Command, Modal, Job } from '../types';
@@ -58,6 +58,7 @@ export function AppDialogs({
   setJobs,
   setError,
 }: AppDialogsProps) {
+  const [exportParts, setExportParts] = useState<string[]>([]);
   const { t, catalogText } = useI18n();
   return (
     <>
@@ -319,6 +320,33 @@ export function AppDialogs({
               <small>{t('用于明确支持这些输入的工作流，会增加体积与耗时。')}</small>
             </span>
           </label>
+          <fieldset className="part-export-options">
+            <legend>{t('部件遮罩序列')}</legend>
+            <p className="helper">
+              {t('选中部件将导出逐帧黑白遮罩和彩色 Part ID；与当前镜头完全对齐。')}
+            </p>
+            {project.entities.flatMap((entity) =>
+              (entity.parts ?? []).map((part) => {
+                const key = `${entity.id}:${part.id}`;
+                return (
+                  <label className="checkbox-field" key={key}>
+                    <input
+                      type="checkbox"
+                      checked={exportParts.includes(key)}
+                      onChange={(e) =>
+                        setExportParts((old) =>
+                          e.target.checked ? [...old, key] : old.filter((x) => x !== key),
+                        )
+                      }
+                    />
+                    <span>
+                      {entity.name} · {part.name}
+                    </span>
+                  </label>
+                );
+              }),
+            )}
+          </fieldset>
           <Button
             className="primary wide"
             icon="download"
@@ -331,6 +359,15 @@ export function AppDialogs({
                   shotId: shot.id,
                   size: exportSize,
                   controls,
+                  ...(exportParts.length
+                    ? {
+                        parts: project.entities.flatMap((entity) =>
+                          (entity.parts ?? [])
+                            .filter((part) => exportParts.includes(`${entity.id}:${part.id}`))
+                            .map((part) => ({ entityId: entity.id, partId: part.id })),
+                        ),
+                      }
+                    : {}),
                 });
                 setJobs((old) => [j, ...old]);
               } catch (e) {

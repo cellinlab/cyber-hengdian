@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { strToU8, zipSync } from 'fflate';
 import { createProject } from '../src/core/catalog';
 import { evaluate } from '../src/core/project';
+import { getPartMap } from '../src/core/parts';
 import { decodePng, verifyPackFiles, verifyShootingPack } from '../tools/verify-shooting-pack';
 
 function png(width: number, height: number, rgb: number[]) {
@@ -97,7 +98,7 @@ function fixture() {
     files['manifest.json'] = strToU8(JSON.stringify(manifest));
   };
   sign();
-  return { files, sign };
+  return { files, sign, manifest };
 }
 
 describe('shooting pack evidence verifier', () => {
@@ -107,6 +108,56 @@ describe('shooting pack evidence verifier', () => {
     expect(report.observedIds).toEqual([1]);
     expect(report.depthRange).toEqual([16, 16]);
     expect(report.visualReview).toContain('Required separately');
+  });
+  it('verifies exact mask/Part ID alignment and rejects a swapped mask despite valid hashes', () => {
+    const { files, sign, manifest } = fixture();
+    const p = JSON.parse(new TextDecoder().decode(files['project.hengdian.json']));
+    const entity = p.entities[0];
+    entity.parts = [{ id: 'cab', name: 'Cab', members: ['0'] }];
+    files['project.hengdian.json'] = strToU8(JSON.stringify(p));
+    const map = getPartMap(p),
+      value = map[0].value;
+    Object.assign(manifest, {
+      parts: {
+        mapping: map,
+        masks: [
+          { entityId: entity.id, partId: 'cab', frameSequence: `masks/${entity.id}/cab/%06d.png` },
+        ],
+      },
+    });
+    for (let i = 0; i < manifest.frameCount; i++) {
+      const frame = String(i).padStart(6, '0');
+      files[`part-id/${frame}.png`] = png(2, 2, [
+        (value >> 16) & 255,
+        (value >> 8) & 255,
+        value & 255,
+      ]);
+      files[`masks/${entity.id}/cab/${frame}.png`] = png(2, 2, [255, 255, 255]);
+    }
+    sign();
+    expect(verifyPackFiles(files).partMaskCount).toBe(1);
+    files[`masks/${entity.id}/cab/000001.png`] = png(2, 2, [0, 0, 0]);
+    sign();
+    expect(() => verifyPackFiles(files)).toThrow('Mask differs from visible Part ID');
+  });
+  it('rejects a referenced appearance image that is absent or does not match its content address', () => {
+    const { files, sign } = fixture();
+    const p = JSON.parse(new TextDecoder().decode(files['project.hengdian.json']));
+    p.references = [
+      {
+        id: 'photo',
+        name: 'Appearance',
+        asset: '0'.repeat(64) + '.png',
+        purpose: 'appearance',
+        description: 'Cab paint',
+      },
+    ];
+    files['project.hengdian.json'] = strToU8(JSON.stringify(p));
+    sign();
+    expect(() => verifyPackFiles(files)).toThrow('Missing reference image');
+    files['references/' + p.references[0].asset] = png(2, 2, [10, 20, 30]);
+    sign();
+    expect(() => verifyPackFiles(files)).toThrow('Reference content hash mismatch');
   });
   it('rejects corrupted bytes and unlisted files', () => {
     const { files } = fixture();

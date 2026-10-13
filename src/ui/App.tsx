@@ -32,6 +32,18 @@ export function App() {
   const [mode, setMode] = useState<'stage' | 'camera'>('camera'),
     [tool, setTool] = useState<'translate' | 'rotate' | 'scale'>('translate');
   const [snap, setSnap] = useState(0);
+  const [partSelection, setPartSelection] = useState<string | null>(null);
+  const [displayPass, setDisplayPass] = useState<'beauty' | 'highlight' | 'part-id' | 'mask'>(
+    'beauty',
+  );
+  useEffect(() => {
+    if (
+      !project?.entities.find((e) => e.id === selection)?.parts?.some((p) => p.id === partSelection)
+    ) {
+      setPartSelection(null);
+      setDisplayPass('beauty');
+    }
+  }, [project, selection, partSelection]);
   const [tab, setTab] = useState<'assets' | 'objects'>('assets'),
     [mobilePanel, setMobilePanel] = useState<'assets' | 'inspect' | null>(null);
   const [modal, setModal] = useState<Modal>(null),
@@ -236,6 +248,23 @@ export function App() {
           const bytes = files['assets/' + asset];
           if (!bytes) throw Error(t('工程包缺少模型：') + asset);
           if ((await uploadAsset(bytes)) !== asset) throw Error(t('模型内容与工程引用不一致'));
+        }
+        for (const reference of p.references ?? []) {
+          const bytes = files['references/' + reference.asset];
+          if (!bytes) throw Error(t('工程包缺少参考图：') + reference.asset);
+          const mime = reference.asset.endsWith('.png')
+            ? 'image/png'
+            : reference.asset.endsWith('.webp')
+              ? 'image/webp'
+              : 'image/jpeg';
+          const response = await fetch('/api/references', {
+            method: 'POST',
+            headers: { 'Content-Type': mime },
+            body: new Blob([bytes as Uint8Array<ArrayBuffer>]),
+          });
+          const uploaded = await response.json();
+          if (!response.ok) throw Error(uploaded.error || t('参考图上传失败'));
+          if (uploaded.asset !== reference.asset) throw Error(t('参考图内容与工程引用不一致'));
         }
       } else {
         const parsed = JSON.parse(await file.text());
@@ -464,6 +493,8 @@ export function App() {
             mode={mode}
             tool={tool}
             snap={snap}
+            displayPass={displayPass}
+            partSelection={partSelection}
             onSelect={(id) => {
               setSelection(id);
               if (id) setTab('objects');
@@ -500,6 +531,10 @@ export function App() {
             setTime,
             setPlaying,
             editShot,
+            partSelection,
+            setPartSelection,
+            displayPass,
+            setDisplayPass,
           }}
         />
       </div>

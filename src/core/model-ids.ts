@@ -29,5 +29,6 @@ export const modelIds = [
   'cafe-table',
   'chair',
   'floor-slab',
+  'truck',
 ] as const;
 export type ModelId = (typeof modelIds)[number];

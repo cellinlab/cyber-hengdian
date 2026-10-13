@@ -1,3 +1,4 @@
+import { getPartMap, type PartSelection } from '../core/parts';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { evaluate } from '../core/project';
@@ -5,7 +6,7 @@ import { walkSwing } from './locomotion';
 import { createActor, updateActor } from './actor';
 import { createSetpiece } from './setpieces';
 import type { Project, Shot, Entity } from '../core/schema';
-export type Pass = 'rgb' | 'depth' | 'id';
+export type Pass = 'rgb' | 'depth' | 'id' | 'part-id' | 'mask' | 'highlight';
 const material = (color: string) => new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
 function mesh(geometry: THREE.BufferGeometry, color: string, x = 0, y = 0, z = 0) {
   const m = new THREE.Mesh(geometry, material(color));
@@ -235,6 +236,25 @@ export class Stage {
         }
       }
     }
+    for (const e of project.entities) {
+      const paths = new Set(this.nodes(e.id).map((n) => n.key));
+      for (const part of e.parts ?? [])
+        for (const member of part.members)
+          if (!paths.has(member))
+            throw Error(`Unknown mesh selector ${e.id}/${part.id}: ${member}`);
+    }
+  }
+  nodes(entityId: string): { key: string; name: string }[] {
+    const group = this.objects.get(entityId);
+    if (!group) throw Error('Entity not found');
+    const result: { key: string; name: string }[] = [];
+    const walk = (node: THREE.Object3D, path: string) => {
+      if (node instanceof THREE.Mesh)
+        result.push({ key: path, name: node.name || `${node.parent?.name || 'Mesh'} ${path}` });
+      node.children.forEach((child, i) => walk(child, path ? `${path}/${i}` : `${i}`));
+    };
+    walk(group, '');
+    return result;
   }
   update(shot: Shot, time: number) {
     const state = evaluate(this.project, shot, time);
@@ -261,20 +281,58 @@ export class Stage {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
   }
-  render(camera: THREE.Camera = this.camera, pass: Pass = 'rgb') {
+  render(camera: THREE.Camera = this.camera, pass: Pass = 'rgb', selection?: PartSelection) {
     if (pass === 'rgb') {
       this.renderer.render(this.scene, camera);
       return;
+    }
+    let chosen: Set<THREE.Mesh> | undefined;
+    if (pass === 'mask' || pass === 'highlight') {
+      const entity = this.project.entities.find((e) => e.id === selection?.entityId);
+      const part = entity?.parts?.find((p) => p.id === selection?.partId);
+      if (!entity || !part) throw Error('Part selection not found');
+      const group = this.objects.get(entity.id)!;
+      chosen = new Set(
+        part.members.map(
+          (key) =>
+            key
+              .split('/')
+              .reduce<THREE.Object3D>(
+                (node, index) => node.children[Number(index)],
+                group,
+              ) as THREE.Mesh,
+        ),
+      );
+    }
+    const meshParts = new Map<THREE.Mesh, number>();
+    for (const entry of getPartMap(this.project)) {
+      const entity = this.project.entities.find((e) => e.id === entry.entityId)!;
+      const part = entity.parts!.find((p) => p.id === entry.partId)!;
+      const group = this.objects.get(entity.id)!;
+      for (const key of part.members)
+        meshParts.set(
+          key
+            .split('/')
+            .reduce<THREE.Object3D>(
+              (node, index) => node.children[Number(index)],
+              group,
+            ) as THREE.Mesh,
+          entry.value,
+        );
     }
     const saved = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
     const temp: THREE.Material[] = [];
     const background = this.scene.background;
     const mapping = this.renderer.toneMapping;
-    this.renderer.toneMapping = THREE.NoToneMapping;
-    this.scene.background = new THREE.Color(pass === 'depth' ? '#ffffff' : '#000000');
+    const colorSpace = this.renderer.outputColorSpace;
+    if (pass !== 'highlight') this.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+    if (pass !== 'highlight') this.renderer.toneMapping = THREE.NoToneMapping;
+    if (pass !== 'highlight')
+      this.scene.background = new THREE.Color(pass === 'depth' ? '#ffffff' : '#000000');
     const idMap = new Map([...this.objects].map(([id, g], i) => [g, i + 1]));
     this.world.traverse((o) => {
       if (!(o instanceof THREE.Mesh)) return;
+      if (pass === 'highlight' && !chosen?.has(o)) return;
       saved.set(o, o.material);
       let m: THREE.Material;
       if (pass === 'depth') {
@@ -302,9 +360,25 @@ export class Stage {
       } else {
         let root: THREE.Object3D | null = o;
         while (root && !idMap.has(root as THREE.Group)) root = root.parent;
-        const index = root ? idMap.get(root as THREE.Group)! : 0;
+        const index =
+          pass === 'mask'
+            ? chosen?.has(o)
+              ? 0xffffff
+              : 0
+            : pass === 'highlight'
+              ? 0xffc83d
+              : pass === 'part-id'
+                ? (meshParts.get(o) ?? 0)
+                : root
+                  ? idMap.get(root as THREE.Group)!
+                  : 0;
         m = new THREE.MeshBasicMaterial({
-          color: index,
+          color: new THREE.Color().setRGB(
+            ((index >> 16) & 255) / 255,
+            ((index >> 8) & 255) / 255,
+            (index & 255) / 255,
+            THREE.LinearSRGBColorSpace,
+          ),
           side: THREE.DoubleSide,
           toneMapped: false,
         });
@@ -312,11 +386,15 @@ export class Stage {
       o.material = m;
       temp.push(m);
     });
-    this.renderer.render(this.scene, camera);
-    for (const [mesh, m] of saved) mesh.material = m;
-    temp.forEach((m) => m.dispose());
-    this.scene.background = background;
-    this.renderer.toneMapping = mapping;
+    try {
+      this.renderer.render(this.scene, camera);
+    } finally {
+      for (const [mesh, m] of saved) mesh.material = m;
+      temp.forEach((m) => m.dispose());
+      this.scene.background = background;
+      this.renderer.toneMapping = mapping;
+      this.renderer.outputColorSpace = colorSpace;
+    }
   }
   inspectFrame() {
     this.scene.updateMatrixWorld(true);

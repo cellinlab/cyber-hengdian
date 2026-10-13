@@ -76,3 +76,9 @@ The scene service itself makes no language-model or external video-generation ca
 For a setpiece, add an entity with `kind: "setpiece"`, a catalog `modelId`, normal transform and the catalog source/license. For an articulated actor, discover joint limits before editing. `pose.set` and `pose.remove` operate on shot-local pose keys; a nonempty pose track overrides procedural action. Root position keys direct travel independently. Use the preset `pose` value as a starting point, not undocumented joint fields. Imported legacy actors need an explicit `actor` definition before pose keys can target them.
 
 Current rigs are FK and procedural. Do not claim foot locking, physical contact, arbitrary retargeting or natural human movement from a valid schema. Check actual frames for joint pose, prop contact, occlusion and camera framing. The built-in geometry is reconstructed by a compatible runtime, while imported GLBs travel inside the shooting pack.
+
+## Parts and appearance references
+
+Use `inspect_meshes` to obtain actual child-index paths and an observed revision. Mark disjoint semantic parts with `part.set`; names are editable, while identity is the entity/part pair. `upload_reference` imports an explicitly supplied absolute local PNG/JPEG/WebP path and returns a content hash. Register it with `reference.add`, then bind its ID to a part or the whole entity in one atomic transaction. The uploading tool alone does not create a saved binding.
+
+`preview_shot` accepts `pass: "part-id"`, or `pass: "mask" | "highlight"` with `selection: {entityId,partId}`. `create_export` optionally takes up to16 `parts` selections. Check complete jobs, original image bytes and the manifest; masks express visible opaque surfaces and do not guarantee downstream generation control. A real Codex parts case is recorded in [the truck example](../examples/truck-parts/README.md) and [verification](showcase/PARTS-VERIFICATION.md).

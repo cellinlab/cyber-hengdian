@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "hengdian/1",
+  "id": "9341743a-d0e5-4812-93a1-523b599f0ddd",
+  "name": "三部件卡车 · 结构与外观",
+  "revision": 0,
+  "fps": "24",
+  "aspect": "16:9",
+  "environment": "empty",
+  "packVersion": "1.0.0",
+  "entities": [
+    {
+      "id": "truck-case",
+      "name": "送货卡车",
+      "kind": "setpiece",
+      "color": "#bb5144",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "parts": [
+        {
+          "id": "cargo",
+          "name": "车厢 · Cargo",
+          "members": [
+            "1/0",
+            "1/1",
+            "1/2"
+          ],
+          "note": "保持车厢独立轮廓，与车头、车轮分开；仅转译参考图中的银灰瓦楞金属外观，不改变白模网格、尺寸或布局。"
+        },
+        {
+          "id": "wheels",
+          "name": "车轮 · Wheels",
+          "members": [
+            "2/0",
+            "2/1",
+            "2/2",
+            "2/3",
+            "2/4",
+            "2/5"
+          ],
+          "note": "保持车轮独立轮廓，与车头、车厢分开；仅转译黑色真实橡胶与胎面外观，保留白模三轴六轮结构及现有网格、位置，不照搬参考图的两轴数量。"
+        },
+        {
+          "id": "cab",
+          "name": "车头 · 红色钣金",
+          "members": [
+            "0/0",
+            "0/1",
+            "0/2",
+            "0/3",
+            "0/4",
+            "0/5"
+          ],
+          "note": "保持车头独立轮廓，与车厢、车轮分开；保留既有外观绑定，仅转译红色钣金、车窗与制造细节，不改变白模网格、布局或结构。"
+        }
+      ],
+      "modelId": "truck",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "foreground-lamp",
+      "name": "路灯",
+      "kind": "setpiece",
+      "color": "#616c69",
+      "transform": {
+        "position": [
+          2.2,
+          0,
+          3.3
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "streetlight",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    },
+    {
+      "id": "road",
+      "name": "双向直路",
+      "kind": "setpiece",
+      "color": "#777d7b",
+      "transform": {
+        "position": [
+          0,
+          -0.01,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "locked": false,
+      "modelId": "road-straight",
+      "source": "Cyber Hengdian original procedural geometry",
+      "license": "MIT"
+    }
+  ],
+  "shots": [
+    {
+      "id": "truck-orbit",
+      "name": "卡车前侧运镜",
+      "duration": 2,
+      "camera": {
+        "from": [
+          8,
+          4.3,
+          9
+        ],
+        "to": [
+          6,
+          3.4,
+          8
+        ],
+        "target": [
+          0,
+          1.25,
+          0
+        ],
+        "targetEnd": [
+          0,
+          1.25,
+          0
+        ],
+        "fov": 42,
+        "follow": null
+      },
+      "tracks": {},
+      "intent": "保持独立车头、车厢、车轮结构，以外观图描述红色车头、银灰车厢和黑色轮胎。"
+    },
+    {
+      "id": "truck-clean",
+      "name": "卡车清晰侧面",
+      "duration": 2,
+      "camera": {
+        "from": [
+          -8,
+          4.3,
+          9
+        ],
+        "to": [
+          -6,
+          3.4,
+          8
+        ],
+        "target": [
+          0,
+          1.25,
+          0
+        ],
+        "targetEnd": [
+          0,
+          1.25,
+          0
+        ],
+        "fov": 42,
+        "follow": null
+      },
+      "tracks": {},
+      "intent": "保持独立车头、车厢、车轮结构，以外观图描述红色车头、银灰车厢和黑色轮胎。"
+    }
+  ],
+  "notes": []
+}

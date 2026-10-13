@@ -2,9 +2,19 @@ import { chromium } from '@playwright/test';
 import { browserOptions } from './exporter';
 import { evaluate } from '../src/core/project';
 import type { Project } from '../src/core/schema';
+import type { Pass } from '../src/runtime/stage';
+import type { PartSelection } from '../src/core/parts';
 let pending = 0;
 let queue = Promise.resolve();
-export async function preview(project: Project, shotId: string, time: number, base: string) {
+export async function preview(
+  project: Project,
+  shotId: string,
+  time: number,
+  base: string,
+  pass: Pass = 'rgb',
+  selection?: PartSelection,
+  size = 640,
+) {
   const shot = project.shots.find((s) => s.id === shotId);
   if (!shot) throw Error('镜头不存在');
   if (time < 0 || time > shot.duration) throw Error('预览时间超出镜头');
@@ -20,20 +30,28 @@ export async function preview(project: Project, shotId: string, time: number, ba
   });
   await preceding;
   try {
-    return await renderPreview(project, shotId, time, base);
+    return await renderPreview(project, shotId, time, base, pass, selection, size);
   } finally {
     pending--;
     release();
   }
 }
 
-async function renderPreview(project: Project, shotId: string, time: number, base: string) {
+async function renderPreview(
+  project: Project,
+  shotId: string,
+  time: number,
+  base: string,
+  pass: Pass = 'rgb',
+  selection?: PartSelection,
+  size = 640,
+) {
   const shot = project.shots.find((s) => s.id === shotId)!;
   let browser;
   try {
     const ratio = project.aspect === '16:9' ? 16 / 9 : project.aspect === '9:16' ? 9 / 16 : 1;
-    const w = ratio >= 1 ? 640 : Math.round(640 * ratio),
-      h = ratio >= 1 ? Math.round(640 / ratio) : 640;
+    const w = ratio >= 1 ? size : Math.round(size * ratio),
+      h = ratio >= 1 ? Math.round(size / ratio) : size;
     browser = await chromium.launch(browserOptions());
     const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
     await page.goto(base + '/render');
@@ -43,12 +61,15 @@ async function renderPreview(project: Project, shotId: string, time: number, bas
       { project, w, h },
     );
     const image = await page.evaluate(
-      ({ shotId, time }) => (window as any).hengdianRender.frame(shotId, time, 'rgb'),
-      { shotId, time },
+      ({ shotId, time, pass, selection }) =>
+        (window as any).hengdianRender.frame(shotId, time, pass, selection),
+      { shotId, time, pass, selection },
     );
     const framing = await page.evaluate(() => (window as any).hengdianRender.inspect());
     return {
       framing,
+      pass,
+      selection,
       revision: project.revision,
       shotId,
       time,
@@ -60,5 +81,26 @@ async function renderPreview(project: Project, shotId: string, time: number, bas
     };
   } finally {
     await browser?.close();
+  }
+}
+
+/** Inspect/validate actual loaded geometry without mutating the saved project. */
+export async function inspectNodes(project: Project, entityId: string | null, base: string) {
+  if (entityId && !project.entities.some((e) => e.id === entityId)) throw Error('对象不存在');
+  const browser = await chromium.launch(browserOptions());
+  try {
+    const page = await browser.newPage();
+    await page.goto(base + '/render');
+    await page.waitForFunction(() => !!(window as any).hengdianRender);
+    await page.evaluate(
+      async (project) => (window as any).hengdianRender.load(project, 64, 64),
+      project,
+    );
+    const nodes = entityId
+      ? await page.evaluate((id) => (window as any).hengdianRender.nodes(id), entityId)
+      : [];
+    return { revision: project.revision, entityId, nodes };
+  } finally {
+    await browser.close();
   }
 }

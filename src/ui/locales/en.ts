@@ -1,5 +1,51 @@
 /** Source-language keys keep UI copy discoverable. New locales must cover every key. */
 export const en = {
+  收起部件编辑: 'Collapse part editor',
+  展开部件编辑: 'Expand part editor',
+  部件约束说明: 'Part constraint notes',
+  '例如：保持车头轮廓与窗户位置，只替换车漆':
+    'For example: preserve cab silhouette and window positions; change paint only',
+  '参考名称（可选）': 'Reference name (optional)',
+  留空使用图片文件名: 'Leave blank to use the image filename',
+
+  部件与参考: 'Parts & references',
+  选择部件: 'Select part',
+  '整个对象 / 新部件': 'Whole object / new part',
+  预览通道: 'Preview pass',
+  正常画面: 'Beauty',
+  '彩色部件 ID': 'Color part ID',
+  高亮选中部件: 'Highlight selected part',
+  黑白部件遮罩: 'Binary part mask',
+  读取模型节点: 'Read model nodes',
+  '节点快照 r{revision}': 'Node snapshot r{revision}',
+  '工程已改变，请重新读取节点再保存部件。':
+    'Project changed. Read nodes again before saving the part.',
+  部件名称: 'Part name',
+  保存部件: 'Save part',
+  删除部件: 'Remove part',
+  外观参考: 'Appearance references',
+  '白模提供空间与运动，参考图描述材质与外观。遮罩效果取决于下游模型支持。':
+    'Blockout guides space and movement; references describe materials and appearance. Mask control depends on the downstream model.',
+  '绑定参考图 {name}': 'Bind reference {name}',
+  '删除参考图 {name}': 'Delete reference {name}',
+  '删除参考图将解除所有对象和部件的绑定。继续？':
+    'Deleting this reference removes its bindings from all objects and parts. Continue?',
+  删除参考图: 'Delete reference',
+  外观描述: 'Appearance description',
+  '例如：深蓝车头，真实金属与磨损': 'For example: dark blue cab, realistic metal and wear',
+  参考来源: 'Reference source',
+  参考许可: 'Reference license',
+  '正在上传参考图…': 'Uploading reference…',
+  上传并绑定参考图: 'Upload and bind reference',
+  绑定外观参考: 'Bind appearance reference',
+  '请选择 10 MB 以内的 PNG、JPEG 或 WebP': 'Choose PNG, JPEG or WebP up to 10 MB',
+  参考图上传失败: 'Reference upload failed',
+  '工程包缺少参考图：': 'Package missing reference: ',
+  参考图内容与工程引用不一致: 'Reference image does not match the project binding',
+  部件遮罩序列: 'Part mask sequences',
+  '选中部件将导出逐帧黑白遮罩和彩色 Part ID；与当前镜头完全对齐。':
+    'Selected parts export frame-aligned binary masks and color Part ID.',
+
   正在连接: 'Connecting',
   已保存到本地: 'Saved locally',
   连接失败: 'Connection failed',

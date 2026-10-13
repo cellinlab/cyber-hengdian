@@ -101,6 +101,35 @@ export function createSetpiece(modelId: string, color: string): THREE.Group {
     pale = '#e1d8c5',
     wood = '#ae8d60';
   switch (modelId) {
+    case 'truck': {
+      const cab = new THREE.Group();
+      cab.name = 'Cab';
+      cab.add(
+        box(2.2, 1.65, 1.9, color, 0, 1.65, 2.15),
+        box(1.95, 0.65, 0.07, '#637e88', 0, 2.08, 3.13),
+        box(2.3, 0.25, 0.18, '#56606a', 0, 0.91, 3.2),
+        box(0.35, 0.2, 0.09, '#fff1b1', -0.8, 1.12, 3.24),
+        box(0.35, 0.2, 0.09, '#fff1b1', 0.8, 1.12, 3.24),
+        box(2.12, 0.35, 1.2, color, 0, 1.13, 2.55),
+      );
+      const cargo = new THREE.Group();
+      cargo.name = 'Cargo';
+      cargo.add(
+        box(2.4, 2.05, 4.1, '#d2d5d4', 0, 1.77, -0.88),
+        box(2.25, 0.22, 4.35, '#535c60', 0, 0.62, -0.83),
+        box(2.35, 1.95, 0.08, '#b5bec3', 0, 1.77, -2.98),
+      );
+      const wheels = new THREE.Group();
+      wheels.name = 'Wheels';
+      for (const z of [2.05, -0.75, -2.05])
+        for (const x of [-1.12, 1.12]) {
+          const wheel = cyl(0.48, 0.24, '#303536', x, 0.48, z);
+          wheel.rotation.z = Math.PI / 2;
+          wheels.add(wheel);
+        }
+      g.add(cab, cargo, wheels);
+      break;
+    }
     case 'eiffel-tower': {
       const levels = [
         [0, 1.25],

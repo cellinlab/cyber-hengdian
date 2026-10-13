@@ -10,7 +10,9 @@ import { Store } from './store';
 import { Exports } from './exporter';
 import { PackRegistry, packSchema } from './packs';
 import { lockWorkspace } from './lock';
-import { preview } from './preview';
+import { preview, inspectNodes } from './preview';
+import { storeReference } from './references';
+import { partSelectionSchema } from '../src/core/parts';
 import { storeGlb } from './assets';
 import { packs, props, recipes, createProject } from '../src/core/catalog';
 import {
@@ -21,12 +23,20 @@ import {
   instantiateAssembly,
 } from '../src/core/library';
 import { posePresets, jointDefinitions } from '../src/core/actor';
-import { projectSchema, operationSchema, environmentSchema, vec3 } from '../src/core/schema';
-import { inspect, Conflict } from '../src/core/project';
+import {
+  projectSchema,
+  operationSchema,
+  environmentSchema,
+  vec3,
+  transactionSchema,
+} from '../src/core/schema';
+import { inspect, Conflict, applyTransaction } from '../src/core/project';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 4317);
 const data = resolve(process.env.HENGDIAN_DATA || join(root, '.hengdian'));
 const assets = join(data, 'assets');
+const references = join(data, 'references');
+mkdirSync(references, { recursive: true });
 mkdirSync(assets, { recursive: true });
 lockWorkspace(data);
 const store = new Store(data);
@@ -51,11 +61,31 @@ app.post('/api/assets', express.raw({ type: 'model/gltf-binary', limit: '50mb' }
   if (!Buffer.isBuffer(req.body)) throw Error('Content-Type must be model/gltf-binary');
   res.json({ asset: storeGlb(req.body, assets) });
 });
+app.post(
+  '/api/references',
+  express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '10mb' }),
+  async (req, res) => {
+    if (!Buffer.isBuffer(req.body)) throw Error('Reference images must be PNG, JPEG or WebP');
+    res.json(
+      await storeReference(req.body, req.headers['content-type']?.split(';')[0] ?? '', references),
+    );
+  },
+);
+app.get('/api/references/:file', (req, res) => {
+  if (!/^[a-f0-9]{64}\.(png|jpg|webp)$/.test(req.params.file)) {
+    res.sendStatus(400);
+    return;
+  }
+  res.sendFile(join(references, req.params.file), { dotfiles: 'allow' });
+});
 app.use(express.json({ limit: '8mb' }));
 const checkAssets = (p: ReturnType<typeof projectSchema.parse>) => {
   for (const e of p.entities)
     if (e.asset && !existsSync(join(assets, e.asset)))
       throw Error(`缺失模型资产 ${e.asset}，请导入完整工程包`);
+  for (const ref of p.references ?? [])
+    if (!existsSync(join(references, ref.asset)))
+      throw Error('Reference image asset is missing: ' + ref.asset);
 };
 const publish = () => {
   for (const res of streams)
@@ -89,9 +119,11 @@ app.post('/api/packs', (req, res) => {
   registry.install(pack);
   res.json({ id: pack.id, version: pack.version, sha256: registry.digest(pack) });
 });
-app.post('/api/packs/:id/instantiate', (req, res) => {
+app.post('/api/packs/:id/instantiate', async (req, res) => {
   const p = registry.instantiate(req.params.id, req.body.version);
   checkAssets(p);
+  if (p.entities.some((e) => e.parts?.length))
+    await inspectNodes(p, null, `http://127.0.0.1:${port}`);
   res.json(store.replace(p, z.number().int().parse(req.body.baseRevision), '载入片场包'));
   publish();
 });
@@ -147,7 +179,8 @@ app.get('/api/events', (req, res) => {
     clearInterval(timer);
   });
 });
-app.post('/api/commands', (req, res) => {
+app.post('/api/commands', async (req, res) => {
+  const tx = transactionSchema.parse(req.body);
   for (const op of req.body.operations ?? []) {
     const asset =
       op.type === 'entity.add'
@@ -158,12 +191,28 @@ app.post('/api/commands', (req, res) => {
     if (asset && (!/^[a-f0-9]{64}\.glb$/.test(asset) || !existsSync(join(assets, asset))))
       throw Error('模型资产不存在');
   }
-  res.json(store.transact(req.body));
+  for (const op of tx.operations)
+    if (op.type === 'reference.add' && !existsSync(join(references, op.reference.asset)))
+      throw Error('Reference image asset is missing');
+  const geometryChanged = tx.operations.some(
+    (op) =>
+      op.type === 'part.set' ||
+      (op.type === 'entity.add' && op.entity.parts?.length) ||
+      (op.type === 'entity.update' && (op.changes.kind || op.changes.asset || op.changes.modelId)),
+  );
+  if (geometryChanged && !store.state.receipts.some((r) => r.id === tx.requestId)) {
+    const candidate = applyTransaction(store.project, tx);
+    if (candidate.entities.some((e) => e.parts?.length))
+      await inspectNodes(candidate, null, `http://127.0.0.1:${port}`);
+  }
+  res.json(store.transact(tx));
   publish();
 });
-app.post('/api/import', (req, res) => {
+app.post('/api/import', async (req, res) => {
   const p = projectSchema.parse(req.body.project);
   checkAssets(p);
+  if (p.entities.some((e) => e.parts?.length))
+    await inspectNodes(p, null, `http://127.0.0.1:${port}`);
   res.json(store.replace(p, z.number().int().parse(req.body.baseRevision)));
   publish();
 });
@@ -191,11 +240,31 @@ app.get('/api/assets/:file', (req, res) => {
   // The workspace defaults to .hengdian; only this hash-validated asset is exposed.
   res.sendFile(join(assets, req.params.file), { dotfiles: 'allow' });
 });
+app.post('/api/nodes', async (req, res) => {
+  const input = z.object({ entityId: z.string() }).strict().parse(req.body);
+  res.json(await inspectNodes(store.project, input.entityId, `http://127.0.0.1:${port}`));
+});
 app.post('/api/preview', async (req, res) => {
   const input = z
-    .object({ shotId: z.string(), time: z.number().finite().nonnegative().default(0) })
+    .object({
+      shotId: z.string(),
+      time: z.number().finite().nonnegative().default(0),
+      pass: z.enum(['rgb', 'depth', 'id', 'part-id', 'mask', 'highlight']).default('rgb'),
+      selection: partSelectionSchema.optional(),
+      size: z.union([z.literal(640), z.literal(1280)]).default(640),
+    })
     .parse(req.body);
-  res.json(await preview(store.project, input.shotId, input.time, `http://127.0.0.1:${port}`));
+  res.json(
+    await preview(
+      store.project,
+      input.shotId,
+      input.time,
+      `http://127.0.0.1:${port}`,
+      input.pass,
+      input.selection,
+      input.size,
+    ),
+  );
 });
 app.get('/api/exports', (_, res) => res.json(exporter.list()));
 app.post('/api/exports', (req, res) => {
@@ -205,11 +274,12 @@ app.post('/api/exports', (req, res) => {
       shotId: z.string(),
       size: z.union([z.literal(640), z.literal(1280)]).default(1280),
       controls: z.boolean().default(false),
+      parts: z.array(partSelectionSchema).max(16).optional(),
     })
     .parse(req.body);
   const p = store.project;
   if (p.revision !== input.baseRevision) throw new Conflict('工程已更新，请刷新后导出');
-  res.status(202).json(exporter.start(p, input.shotId, input.size, input.controls));
+  res.status(202).json(exporter.start(p, input.shotId, input.size, input.controls, input.parts));
 });
 app.post('/api/exports/:id/cancel', (req, res) => res.json(exporter.cancel(req.params.id)));
 app.get('/api/exports/:id/download', (req, res) => {

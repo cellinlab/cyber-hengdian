@@ -13,6 +13,8 @@ export type ViewportProps = {
   mode: 'stage' | 'camera';
   tool: 'translate' | 'rotate' | 'scale';
   snap?: number;
+  displayPass?: 'beauty' | 'highlight' | 'part-id' | 'mask';
+  partSelection?: string | null;
   onThumbnails?: (images: Record<string, string>, revision: number) => void;
   onSelect: (id: string | null) => void;
   onTransform: (id: string, t: Transform, revision: number) => void;
@@ -129,15 +131,30 @@ export function Viewport(props: ViewportProps) {
       if (
         selected &&
         p.mode === 'stage' &&
+        (!p.displayPass || p.displayPass === 'beauty') &&
         !p.project.entities.find((e) => e.id === p.selection)?.locked
       ) {
         if (gizmo.object !== selected) gizmo.attach(selected);
         gizmo.setMode(p.tool);
         gizmo.setTranslationSnap(p.snap || null);
       } else gizmo.detach();
-      bounds.visible = !!selected && p.mode === 'stage';
+      bounds.visible =
+        !!selected && p.mode === 'stage' && (!p.displayPass || p.displayPass === 'beauty');
       if (selected) bounds.setFromObject(selected);
-      stage.render(p.mode === 'stage' ? editor : stage.camera);
+      const validPart = p.project.entities
+        .find((e) => e.id === p.selection)
+        ?.parts?.some((part) => part.id === p.partSelection);
+      const pass =
+        (p.displayPass === 'mask' || p.displayPass === 'highlight') && !validPart
+          ? 'beauty'
+          : p.displayPass;
+      stage.render(
+        p.mode === 'stage' ? editor : stage.camera,
+        pass === 'beauty' || !pass ? 'rgb' : pass,
+        p.selection && p.partSelection
+          ? { entityId: p.selection, partId: p.partSelection }
+          : undefined,
+      );
     };
     tick();
     (stage as Stage & { setLoaded: (b: boolean) => void }).setLoaded = (b) => (loaded = b);

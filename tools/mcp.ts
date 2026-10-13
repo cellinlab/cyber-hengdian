@@ -4,7 +4,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { actorTupleSchemas } from '../src/core/actor';
 import { quat, transactionSchema, transformSchema, vec3 } from '../src/core/schema';
-import { request, ServiceError } from './client';
+import { request, uploadReference, ServiceError } from './client';
+import { partSelectionSchema } from '../src/core/parts';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 // MCP's SDK emits draft-7 tuple items as an array of schemas. Codex accepts one
@@ -122,6 +123,52 @@ server.registerTool(
   ({ id, ...input }) => call('/api/assemblies/' + encodeURIComponent(id) + '/instantiate', input),
 );
 server.registerTool(
+  'inspect_meshes',
+  {
+    description:
+      'List stable mesh child-index paths from the actual loaded entity. Use these paths to assign disjoint semantic parts with part.set. Duplicate node names do not identify meshes. Returns observed revision; reject stale edits.',
+    inputSchema: { entityId: z.string().min(1) },
+    annotations: readOnly,
+  },
+  ({ entityId }) => call('/api/nodes', { entityId }),
+);
+server.registerTool(
+  'upload_reference',
+  {
+    description:
+      'Import one PNG/JPEG/WebP from an explicitly supplied absolute local file path into the selected loopback workspace. Returns content hash and image size, not a saved binding. Register with reference.add and bind referenceIds via an atomic transaction. Only import images requested for this creative task.',
+    inputSchema: { file: z.string().min(1) },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async ({ file }) => {
+    try {
+      const data = await uploadReference(file);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(data) }],
+        structuredContent: { data },
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: error instanceof Error ? error.message : String(error),
+              status: error instanceof ServiceError ? error.status : undefined,
+            }),
+          },
+        ],
+      };
+    }
+  },
+);
+server.registerTool(
   'list_packs',
   {
     description:
@@ -201,7 +248,12 @@ server.registerTool(
   {
     description:
       'Render an actual saved-project frame at the requested shot time. Returns PNG image content plus revision, camera, timing and per-entity framing metadata. Framing uses projected world bounds and does not prove occlusion or visibility. A still does not prove motion or contact quality. Requires the local browser renderer. Check host/model image support before claiming visual judgment.',
-    inputSchema: { shotId: z.string().min(1), time: z.number().finite().nonnegative().default(0) },
+    inputSchema: {
+      shotId: z.string().min(1),
+      time: z.number().finite().nonnegative().default(0),
+      pass: z.enum(['rgb', 'depth', 'id', 'part-id', 'mask', 'highlight']).default('rgb'),
+      selection: partSelectionSchema.optional(),
+    },
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -221,6 +273,8 @@ server.registerTool(
           mimeType: z.literal('image/png'),
           image: z.string(),
           camera: z.unknown(),
+          pass: z.string().optional(),
+          selection: partSelectionSchema.optional(),
           framing: z.array(
             z.object({
               id: z.string(),
@@ -270,6 +324,7 @@ server.registerTool(
       shotId: z.string().min(1),
       size: z.union([z.literal(640), z.literal(1280)]).default(1280),
       controls: z.boolean().default(false),
+      parts: z.array(partSelectionSchema).max(16).optional(),
     },
     annotations: {
       readOnlyHint: false,

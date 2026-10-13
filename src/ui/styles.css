@@ -7,3 +7,61 @@
 @import './css/dialogs.css';
 @import './css/responsive.css';
 @import './css/refinements.css';
+
+.parts-inspector {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+.part-node-list {
+  max-height: 200px;
+  overflow: auto;
+  margin: 8px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.part-node-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  align-items: start;
+  font-size: 12px;
+}
+.part-node-row small {
+  display: block;
+  opacity: 0.6;
+  font-size: 10px;
+}
+.reference-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 6px 10px;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.reference-row img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  grid-row: span 2;
+  border-radius: 6px;
+}
+.reference-row label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.reference-row small {
+  font-size: 11px;
+  opacity: 0.65;
+}
+.reference-row button {
+  grid-column: 2;
+  justify-self: start;
+}
+.parts-inspector textarea {
+  min-height: 60px;
+  width: 100%;
+  resize: vertical;
+}

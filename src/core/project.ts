@@ -44,11 +44,19 @@ export function applyTransaction(project: Project, input: Transaction): Project 
         if (
           e.locked &&
           (op.changes.transform ||
+            op.changes.asset !== undefined ||
+            op.changes.referenceIds !== undefined ||
             op.changes.actor !== undefined ||
             op.changes.kind ||
             op.changes.modelId !== undefined)
         )
           throw Error('对象已锁定');
+        if (
+          (op.changes.kind !== undefined && op.changes.kind !== e.kind) ||
+          (op.changes.asset !== undefined && op.changes.asset !== e.asset) ||
+          (op.changes.modelId !== undefined && op.changes.modelId !== e.modelId)
+        )
+          delete e.parts;
         Object.assign(e, op.changes);
         if (op.changes.asset === null || e.kind !== 'glb') delete e.asset;
         if (op.changes.modelId === null || e.kind !== 'setpiece') delete e.modelId;
@@ -116,6 +124,31 @@ export function applyTransaction(project: Project, input: Transaction): Project 
           );
         break;
       }
+      case 'part.set': {
+        const e = entity(op.entityId);
+        if (e.locked) throw Error('对象已锁定');
+        e.parts = [...(e.parts ?? []).filter((part) => part.id !== op.part.id), op.part];
+        break;
+      }
+      case 'part.remove': {
+        const e = entity(op.entityId);
+        if (e.locked) throw Error('对象已锁定');
+        e.parts = (e.parts ?? []).filter((part) => part.id !== op.partId);
+        if (!e.parts.length) delete e.parts;
+        break;
+      }
+      case 'reference.add':
+        p.references = [...(p.references ?? []), op.reference];
+        break;
+      case 'reference.remove':
+        p.references = (p.references ?? []).filter((ref) => ref.id !== op.id);
+        for (const e of p.entities) {
+          if (e.referenceIds) e.referenceIds = e.referenceIds.filter((id) => id !== op.id);
+          for (const part of e.parts ?? [])
+            if (part.referenceIds)
+              part.referenceIds = part.referenceIds.filter((id) => id !== op.id);
+        }
+        break;
       case 'note.add':
         p.notes.push(op.note);
         break;

@@ -2,7 +2,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { transactionSchema } from '../src/core/schema';
-import { request } from './client';
+import { request, uploadReference } from './client';
+import { resolve } from 'node:path';
 
 const help = `Cyber Hengdian — one service, shared project state
 Usage: npm run cli -- COMMAND [arguments]
@@ -17,10 +18,12 @@ Usage: npm run cli -- COMMAND [arguments]
   install-pack FILE              Install a pack manifest (referenced GLBs must exist)
   use-pack ID --base-revision N [--version X.Y.Z]
                                  Instantiate a pack, replacing current project
-  preview --shot ID [--time 0] --out FILE.png
+  preview --shot ID [--time 0] --out FILE.png [--pass rgb|part-id|mask|highlight] [--entity ID --part ID]
                                  Render a real frame and save PNG without overwriting
+  nodes ENTITY                   List stable mesh selectors for marking parts
+  upload-reference FILE          Upload an appearance image; bind with apply
   inspect                        Validate and summarize live project
-  export SHOT --base-revision N [--size 640|1280] [--controls]
+  export SHOT --base-revision N [--size 640|1280] [--controls] [--parts FILE.json]
                                  Start a snapshot export; returns job, not completed media
   jobs                           List export jobs and actual status
   cancel JOB                     Cancel an export job
@@ -128,8 +131,20 @@ async function main() {
       });
       break;
     }
+    case 'nodes': {
+      const entityId = required(args.shift(), 'entity ID');
+      options(args, []);
+      result = await request('/api/nodes', { entityId }, 45000);
+      break;
+    }
+    case 'upload-reference': {
+      const file = required(args.shift(), 'image file');
+      options(args, []);
+      result = await uploadReference(resolve(file));
+      break;
+    }
     case 'preview': {
-      const opts = options(args, ['--shot', '--time', '--out']);
+      const opts = options(args, ['--shot', '--time', '--out', '--pass', '--entity', '--part']);
       const shotId = required(
         typeof opts['--shot'] === 'string' ? opts['--shot'] : undefined,
         '--shot',
@@ -148,7 +163,21 @@ async function main() {
           image: z.string(),
           camera: z.unknown(),
         })
-        .parse(await request('/api/preview', { shotId, time }, 45000));
+        .parse(
+          await request(
+            '/api/preview',
+            {
+              shotId,
+              time,
+              pass: opts['--pass'] ?? 'rgb',
+              selection:
+                opts['--entity'] && opts['--part']
+                  ? { entityId: opts['--entity'], partId: opts['--part'] }
+                  : undefined,
+            },
+            45000,
+          ),
+        );
       const { image, ...metadata } = preview;
       await writeFile(out, Buffer.from(image, 'base64'), { flag: 'wx' });
       result = { ...metadata, saved: out };
@@ -156,7 +185,7 @@ async function main() {
     }
     case 'export': {
       const shotId = required(args.shift(), 'shot ID');
-      const opts = options(args, ['--base-revision', '--size', '--controls']);
+      const opts = options(args, ['--base-revision', '--size', '--controls', '--parts']);
       const size = Number(opts['--size'] || 1280);
       if (![640, 1280].includes(size)) throw Error('--size must be 640 or 1280');
       result = await request('/api/exports', {
@@ -164,6 +193,9 @@ async function main() {
         baseRevision: revision(opts['--base-revision']),
         size,
         controls: !!opts['--controls'],
+        parts: opts['--parts']
+          ? JSON.parse(await readFile(resolve(String(opts['--parts'])), 'utf8'))
+          : undefined,
       });
       break;
     }

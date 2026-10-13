@@ -7,6 +7,7 @@ import { Icon } from '../Icons';
 import { Button, Field, Vector } from './Controls';
 import { pad } from '../format';
 import { ActorInspector } from './ActorInspector';
+import { PartsInspector } from './PartsInspector';
 
 type InspectorPanelProps = {
   project: Project;
@@ -24,6 +25,10 @@ type InspectorPanelProps = {
   setTransform: (change: Partial<Transform>) => void;
   setTime: Set<number>;
   setPlaying: Set<boolean>;
+  partSelection: string | null;
+  setPartSelection: Set<string | null>;
+  displayPass: 'beauty' | 'highlight' | 'part-id' | 'mask';
+  setDisplayPass: Set<'beauty' | 'highlight' | 'part-id' | 'mask'>;
   editShot: (changes: Partial<Omit<Shot, 'id' | 'tracks'>>) => void;
 };
 export function InspectorPanel({
@@ -43,6 +48,10 @@ export function InspectorPanel({
   setTime,
   setPlaying,
   editShot,
+  partSelection,
+  setPartSelection,
+  displayPass,
+  setDisplayPass,
 }: InspectorPanelProps) {
   const { t, catalogText } = useI18n();
   const rotation = sampled
@@ -167,6 +176,18 @@ export function InspectorPanel({
                 }}
               />
             )}
+            <PartsInspector
+              {...{
+                project,
+                entity,
+                command,
+                busy,
+                partSelection,
+                setPartSelection,
+                displayPass,
+                setDisplayPass,
+              }}
+            />
             <div className="section-heading">
               <span>{t('空间变换')}</span>
               <span>{time > 0 || selectedKeys.length ? t('镜头关键帧') : t('基础姿态')}</span>

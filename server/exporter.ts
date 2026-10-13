@@ -8,7 +8,8 @@ import {
   rmSync,
   renameSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { getPartMap, type PartSelection } from '../src/core/parts';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { zipSync, strToU8 } from 'fflate';
@@ -73,7 +74,13 @@ export class Exports {
     }
     return j;
   }
-  start(project: Project, shotId: string, size: number, controls: boolean) {
+  start(
+    project: Project,
+    shotId: string,
+    size: number,
+    controls: boolean,
+    parts: PartSelection[] = [],
+  ) {
     if (this.active) throw Error('已有导出任务进行中');
     if (!project.shots.some((s) => s.id === shotId)) throw Error('镜头不存在');
     if (
@@ -81,6 +88,19 @@ export class Exports {
       Math.round(project.shots.find((s) => s.id === shotId)!.duration * Number(project.fps)) > 720
     )
       throw Error('首版完整控制通道最多 720 帧，请缩短镜头或降低帧率');
+    const map = getPartMap(project);
+    const keys = parts.map((s) => s.entityId + '/' + s.partId);
+    if (
+      parts.length > 16 ||
+      new Set(keys).size !== keys.length ||
+      parts.some((s) => !map.some((p) => p.entityId === s.entityId && p.partId === s.partId))
+    )
+      throw Error('Select up to 16 existing, unique parts');
+    if (
+      parts.length &&
+      Math.round(project.shots.find((s) => s.id === shotId)!.duration * Number(project.fps)) > 720
+    )
+      throw Error('Part masks support up to 720 frames');
     const id = randomUUID();
     const j: ExportJob = {
       id,
@@ -93,10 +113,16 @@ export class Exports {
     this.jobs.set(id, j);
     this.active = id;
     this.save(j);
-    void this.run(j, structuredClone(project), size, controls);
+    void this.run(j, structuredClone(project), size, controls, structuredClone(parts));
     return j;
   }
-  private async run(j: ExportJob, p: Project, size: number, controls: boolean) {
+  private async run(
+    j: ExportJob,
+    p: Project,
+    size: number,
+    controls: boolean,
+    parts: PartSelection[],
+  ) {
     const frames = join(this.dir, j.id + '-frames');
     mkdirSync(frames);
     let browser: Browser | undefined;
@@ -129,7 +155,10 @@ export class Exports {
         if ((j.status as string) === 'cancelled') throw Error('cancelled');
         const time = i / fps;
         const frame = String(i).padStart(6, '0');
-        for (const pass of controls ? ['rgb', 'depth', 'id'] : ['rgb']) {
+        for (const pass of [
+          ...(controls ? ['rgb', 'depth', 'id'] : ['rgb']),
+          ...(parts.length ? ['part-id'] : []),
+        ]) {
           const data = Buffer.from(
             await page.evaluate(
               ({ shotId, time, pass }) => (window as any).hengdianRender.frame(shotId, time, pass),
@@ -142,6 +171,17 @@ export class Exports {
             if ([0, Math.floor(count / 2), count - 1].includes(i))
               files[`keyframes/${frame}.png`] = data;
           } else files[`${pass}/${frame}.png`] = data;
+        }
+        for (const selection of parts) {
+          const data = Buffer.from(
+            await page.evaluate(
+              ({ shotId, time, selection }) =>
+                (window as any).hengdianRender.frame(shotId, time, 'mask', selection),
+              { shotId: shot.id, time, selection },
+            ),
+            'base64',
+          );
+          files[`masks/${selection.entityId}/${selection.partId}/${frame}.png`] = data;
         }
         cameraFrames.push({ frame: i, time, ...evaluate(p, shot, time).camera });
         j.progress = Math.round(((i + 1) / count) * 90);
@@ -182,8 +222,31 @@ export class Exports {
       files['camera.json'] = strToU8(JSON.stringify(cameraFrames));
       for (const e of p.entities)
         if (e.asset) files['assets/' + e.asset] = readFileSync(join(this.assets, e.asset));
+      for (const ref of p.references ?? [])
+        files['references/' + ref.asset] = readFileSync(
+          join(dirname(this.assets), 'references', ref.asset),
+        );
+      files['references.json'] = strToU8(
+        JSON.stringify(
+          {
+            references: p.references ?? [],
+            bindings: p.entities.map((e) => ({
+              entityId: e.id,
+              referenceIds: e.referenceIds ?? [],
+              parts: (e.parts ?? []).map((part) => ({
+                partId: part.id,
+                name: part.name,
+                referenceIds: part.referenceIds ?? [],
+                note: part.note ?? '',
+              })),
+            })),
+          },
+          null,
+          2,
+        ),
+      );
       files['README.txt'] = strToU8(
-        `Cyber Hengdian production handoff\nShot: ${shot.name}\nIntent: ${shot.intent}\nThis is a 3D previsualization reference, not AI-generated final footage.\nImport this ZIP into Cyber Hengdian to restore the editable project and GLB assets.\nGeneration services differ: only supply depth/ID sequences when the chosen workflow supports them.\n`,
+        `Cyber Hengdian production handoff\nShot: ${shot.name}\nIntent: ${shot.intent}\nThis is a 3D previsualization reference, not AI-generated final footage.\nImport this ZIP into Cyber Hengdian to restore the editable project and GLB assets.\nGeneration services differ: only supply depth/ID/part-mask sequences when the chosen workflow supports them.\nAppearance images are originals, with per-part bindings in references.json; they are not geometry or motion controls.\nMasks describe visible opaque surfaces; they do not guarantee structure locking in a video generator.\n`,
       );
       files['manifest.json'] = strToU8(
         JSON.stringify(
@@ -226,6 +289,23 @@ export class Exports {
                   ]),
                 )
               : null,
+            parts: parts.length
+              ? {
+                  encoding: '24-bit lossless RGB integer ID; black=unassigned/background',
+                  visibility: 'visible opaque surfaces, depth occlusion preserved',
+                  frameSequence: 'part-id/%06d.png',
+                  mapping: getPartMap(p),
+                  masks: parts.map((selection) => ({
+                    ...selection,
+                    frameSequence: `masks/${selection.entityId}/${selection.partId}/%06d.png`,
+                    encoding: '8-bit black/white RGB; white=visible selected part',
+                  })),
+                }
+              : null,
+            references: (p.references ?? []).map((ref) => ({
+              ...ref,
+              path: 'references/' + ref.asset,
+            })),
             assets: p.entities
               .filter((e) => e.asset)
               .map((e) => ({

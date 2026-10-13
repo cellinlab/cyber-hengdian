@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { actorSchema, poseKeySchema } from './actor';
+import { partSchema, appearanceReferenceSchema, referenceIdsSchema } from './parts';
 import { modelIds } from './model-ids';
 export const environmentSchema = z.enum(['courtyard', 'studio', 'exterior', 'empty']);
 const finite = z.number().finite();
@@ -40,6 +41,8 @@ export const entitySchema = z
     color: z.string().regex(/^#[\da-fA-F]{6}$/),
     transform: transformSchema,
     locked: z.boolean(),
+    parts: z.array(partSchema).min(1).max(64).optional(),
+    referenceIds: referenceIdsSchema.optional(),
     actor: actorSchema.optional(),
     modelId: z.enum(modelIds).optional(),
     asset: z
@@ -102,6 +105,7 @@ export const projectSchema = z
     entities: z.array(entitySchema).max(300),
     shots: z.array(shotSchema).min(1).max(100),
     notes: z.array(noteSchema).max(1000),
+    references: z.array(appearanceReferenceSchema).max(256).optional(),
   })
   .strict()
   .superRefine((p, ctx) => {
@@ -114,6 +118,19 @@ export const projectSchema = z
       new Set(p.notes.map((n) => n.id)).size !== p.notes.length
     )
       fail('Duplicate IDs');
+    const references = new Set((p.references ?? []).map((r) => r.id));
+    if (references.size !== (p.references ?? []).length) fail('Duplicate reference IDs');
+    for (const e of p.entities) {
+      if (new Set((e.parts ?? []).map((part) => part.id)).size !== (e.parts ?? []).length)
+        fail('Duplicate part IDs');
+      const members = (e.parts ?? []).flatMap((part) => part.members);
+      if (new Set(members).size !== members.length) fail('Mesh selector belongs to multiple parts');
+      for (const ref of [
+        ...(e.referenceIds ?? []),
+        ...(e.parts ?? []).flatMap((part) => part.referenceIds ?? []),
+      ])
+        if (!references.has(ref)) fail('Unknown appearance reference');
+    }
     for (const s of p.shots) {
       if (s.camera.follow && !ids.has(s.camera.follow)) fail('Unknown camera target');
       for (const [entity, keys] of Object.entries(s.poseTracks ?? {})) {
@@ -170,6 +187,7 @@ export const operationSchema = z.discriminatedUnion('type', [
           .optional(),
         source: z.string().max(500).optional(),
         license: z.string().max(160).optional(),
+        referenceIds: referenceIdsSchema.optional(),
         name: text.optional(),
         color: z
           .string()
@@ -194,6 +212,10 @@ export const operationSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('key.remove'), shotId: id, entityId: id, time: finite }),
   z.object({ type: z.literal('pose.set'), shotId: id, entityId: id, key: poseKeySchema }),
   z.object({ type: z.literal('pose.remove'), shotId: id, entityId: id, time: finite }),
+  z.object({ type: z.literal('part.set'), entityId: id, part: partSchema }),
+  z.object({ type: z.literal('part.remove'), entityId: id, partId: id }),
+  z.object({ type: z.literal('reference.add'), reference: appearanceReferenceSchema }),
+  z.object({ type: z.literal('reference.remove'), id }),
   z.object({ type: z.literal('note.add'), note: noteSchema }),
   z.object({ type: z.literal('note.remove'), id }),
 ]);
