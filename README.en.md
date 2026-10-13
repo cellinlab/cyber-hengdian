@@ -6,7 +6,7 @@
 
 Open virtual-production infrastructure for video creators and AI agents. Arrange a set, direct actors and cameras, assign semantic parts and appearance references, then export an editable shooting pack for your video workflow.
 
-![Original three-part truck rendered in the virtual set](public/readme/truck-hero.png)
+![Complete director workstation with asset library, scene preview, parts and appearance references, and shot timeline](public/readme/workstation-overview.png)
 
 ## Quick start
 
