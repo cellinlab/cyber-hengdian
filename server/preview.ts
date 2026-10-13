@@ -2,13 +2,33 @@ import { chromium } from '@playwright/test';
 import { browserOptions } from './exporter';
 import { evaluate } from '../src/core/project';
 import type { Project } from '../src/core/schema';
-let active = false;
+let pending = 0;
+let queue = Promise.resolve();
 export async function preview(project: Project, shotId: string, time: number, base: string) {
-  if (active) throw Error('预览正在渲染，请稍后重试');
   const shot = project.shots.find((s) => s.id === shotId);
   if (!shot) throw Error('镜头不存在');
   if (time < 0 || time > shot.duration) throw Error('预览时间超出镜头');
-  active = true;
+  // Agents commonly request start/middle/end in parallel. Serialize Chromium
+  // work, retaining each caller's immutable project snapshot and a bounded queue.
+  if (pending >= 4)
+    throw Object.assign(Error('预览队列已满（最多 4 张），请等待已有预览完成'), { status: 429 });
+  pending++;
+  const preceding = queue;
+  let release!: () => void;
+  queue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await preceding;
+  try {
+    return await renderPreview(project, shotId, time, base);
+  } finally {
+    pending--;
+    release();
+  }
+}
+
+async function renderPreview(project: Project, shotId: string, time: number, base: string) {
+  const shot = project.shots.find((s) => s.id === shotId)!;
   let browser;
   try {
     const ratio = project.aspect === '16:9' ? 16 / 9 : project.aspect === '9:16' ? 9 / 16 : 1;
@@ -40,6 +60,5 @@ export async function preview(project: Project, shotId: string, time: number, ba
     };
   } finally {
     await browser?.close();
-    active = false;
   }
 }

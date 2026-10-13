@@ -2,9 +2,25 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { transactionSchema } from '../src/core/schema';
+import { quat, transactionSchema, transformSchema, vec3 } from '../src/core/schema';
 import { request, ServiceError } from './client';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+
+// MCP's SDK emits draft-7 tuple items as an array of schemas. Codex accepts one
+// homogeneous items schema, so advertise these numeric tuples as fixed-length
+// arrays. This registry is local to this MCP process; runtime Zod tuple,
+// quaternion and scale validation stays intact.
+for (const [schema, length] of [
+  [vec3, 3],
+  [quat, 4],
+  [transformSchema.shape.scale, 3],
+] as const) {
+  z.globalRegistry.add(schema, {
+    items: { type: 'number' },
+    minItems: length,
+    maxItems: length,
+  });
+}
 
 const server = new McpServer(
   { name: 'cyber-hengdian', version: '0.1.0' },
@@ -13,9 +29,13 @@ const server = new McpServer(
       'Read project and schema before editing. Use stable IDs, explicit baseRevision and requestId. Apply one atomic transaction, then read and inspect to verify. A 409 requires re-reading and reconsidering the edit; never overwrite newer work. Exports are asynchronous; queued or running is not success. This is a previsualization tool, not a video generation service.',
   },
 );
-async function call(path: string, body?: unknown): Promise<CallToolResult> {
+async function call(
+  path: string,
+  body?: unknown,
+  select: (data: unknown) => unknown = (data) => data,
+): Promise<CallToolResult> {
   try {
-    const data = await request(path, body);
+    const data = select(await request(path, body));
     return {
       content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
       structuredContent: { data },
@@ -98,11 +118,18 @@ server.registerTool(
   'get_schema',
   {
     description:
-      'Read current project and operation JSON schemas. Read before constructing edits; runtime validation additionally checks references and time boundaries.',
-    inputSchema: {},
+      'Read JSON schemas, optionally limited to project, operation, or pack to reduce context. For edits choose operation. Omitting scope returns all schemas for compatibility. Runtime validation additionally checks references and time boundaries.',
+    inputSchema: { scope: z.enum(['all', 'project', 'operation', 'pack']).default('all') },
     annotations: readOnly,
   },
-  () => call('/api/schema'),
+  ({ scope }) =>
+    call('/api/schema', undefined, (data) => {
+      if (scope === 'all') return data;
+      const schemas = z
+        .object({ project: z.unknown(), operation: z.unknown(), pack: z.unknown() })
+        .parse(data);
+      return { [scope]: schemas[scope] };
+    }),
 );
 server.registerTool(
   'apply_operations',
@@ -133,7 +160,7 @@ server.registerTool(
   'preview_shot',
   {
     description:
-      'Render an actual saved-project frame at the requested shot time. Returns PNG image content plus revision, camera and timing metadata. Use this to check framing and visibility; a still does not prove motion or contact quality. Requires the local browser renderer. Check host/model image support before claiming visual judgment.',
+      'Render an actual saved-project frame at the requested shot time. Returns PNG image content plus revision, camera, timing and per-entity framing metadata. Framing uses projected world bounds and does not prove occlusion or visibility. A still does not prove motion or contact quality. Requires the local browser renderer. Check host/model image support before claiming visual judgment.',
     inputSchema: { shotId: z.string().min(1), time: z.number().finite().nonnegative().default(0) },
     annotations: {
       readOnlyHint: true,
@@ -154,6 +181,19 @@ server.registerTool(
           mimeType: z.literal('image/png'),
           image: z.string(),
           camera: z.unknown(),
+          framing: z.array(
+            z.object({
+              id: z.string(),
+              intersectsFrame: z.boolean(),
+              screenBounds: z.object({
+                left: z.number(),
+                right: z.number(),
+                top: z.number(),
+                bottom: z.number(),
+              }),
+              note: z.string(),
+            }),
+          ),
         })
         .parse(await request('/api/preview', input, 45000));
       const { image, ...metadata } = preview;

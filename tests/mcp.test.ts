@@ -46,7 +46,8 @@ beforeAll(async () => {
   base = `http://127.0.0.1:${port}`;
   service = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), HENGDIAN_DATA: dataDir, NODE_ENV: 'production' },
+    // Render current source through Vite; a clean checkout has no dist yet.
+    env: { ...process.env, PORT: String(port), HENGDIAN_DATA: dataDir, NODE_ENV: 'test' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   service.stdout?.on('data', (chunk) => {
@@ -116,6 +117,24 @@ describe('real HTTP service through MCP stdio', () => {
     expect(edit.inputSchema.required).toEqual(
       expect.arrayContaining(['requestId', 'baseRevision', 'label', 'operations']),
     );
+    // Codex parses `items` as one schema, not draft-7's tuple array. Validate
+    // the actual wire schema so SDK/Zod changes cannot silently hide editing.
+    const numericTuples: number[] = [];
+    function checkItems(value: unknown) {
+      if (!value || typeof value !== 'object') return;
+      const schema = value as Record<string, any>;
+      if ('items' in schema) {
+        expect(Array.isArray(schema.items)).toBe(false);
+        expect(schema.items).toBeTypeOf('object');
+        if (schema.items.type === 'number' && schema.minItems === schema.maxItems) {
+          numericTuples.push(schema.minItems);
+        }
+      }
+      for (const child of Object.values(value)) checkItems(child);
+    }
+    checkItems(edit.inputSchema);
+    expect(numericTuples).toContain(3);
+    expect(numericTuples).toContain(4);
     const resources = await client.listResources();
     expect(resources.resources[0].uri).toBe('hengdian://project');
     const resource = await client.readResource({ uri: 'hengdian://project' });
@@ -128,6 +147,105 @@ describe('real HTTP service through MCP stdio', () => {
     const schema = textData(await client.callTool({ name: 'get_schema', arguments: {} }));
     expect(schema.project.properties.schemaVersion.const).toBe('hengdian/1');
   });
+
+  it('returns only the requested schema without changing the default response', async () => {
+    const all = textData(await client.callTool({ name: 'get_schema', arguments: {} }));
+    for (const scope of ['project', 'operation', 'pack']) {
+      const selected = await client.callTool({ name: 'get_schema', arguments: { scope } });
+      expect(selected.isError).not.toBe(true);
+      expect(textData(selected)).toEqual({ [scope]: all[scope] });
+      expect(selected.structuredContent).toEqual({ data: { [scope]: all[scope] } });
+    }
+    const invalid = await client.callTool({ name: 'get_schema', arguments: { scope: 'unknown' } });
+    expect(invalid.isError).toBe(true);
+  });
+
+  it('preserves tuple, quaternion and scale validation with the host-compatible schema', async () => {
+    const project = textData(
+      await client.callTool({ name: 'read_project', arguments: {} }),
+    ) as Project;
+    for (const transform of [
+      { position: [0, 0], rotation: [0, 0, 0, 1], scale: [1, 1, 1] },
+      { position: [0, 0, 0], rotation: [0, 0, 0, 2], scale: [1, 1, 1] },
+      { position: [0, 0, 0], rotation: [0, 0, 0, 1], scale: [0, 1, 1] },
+    ]) {
+      const invalidTransform = await client.callTool({
+        name: 'apply_operations',
+        arguments: {
+          requestId: 'invalid-transform',
+          label: 'Invalid transform must not persist',
+          baseRevision: project.revision,
+          operations: [
+            { type: 'entity.update', id: project.entities[0].id, changes: { transform } },
+          ],
+        },
+      });
+      expect(invalidTransform.isError).toBe(true);
+    }
+    expect(await (await fetch(base + '/api/project')).json()).toEqual(project);
+  });
+
+  it('delivers an actual PNG and framing metadata together without changing the project', async () => {
+    const project = textData(
+      await client.callTool({ name: 'read_project', arguments: {} }),
+    ) as Project;
+    const shot = project.shots[0];
+    const result = await client.callTool({
+      name: 'preview_shot',
+      arguments: { shotId: shot.id, time: shot.duration / 2 },
+    });
+    expect(result.isError).not.toBe(true);
+    const content = result.content as { type: string; data?: string; mimeType?: string }[];
+    const image = content.find((item) => item.type === 'image');
+    expect(image?.mimeType).toBe('image/png');
+    const png = Buffer.from(image!.data!, 'base64');
+    expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    const metadata = textData(result);
+    expect(png.readUInt32BE(16)).toBe(metadata.width);
+    expect(png.readUInt32BE(20)).toBe(metadata.height);
+    expect(metadata).toMatchObject({
+      revision: project.revision,
+      shotId: shot.id,
+      time: shot.duration / 2,
+    });
+    expect(metadata.framing.map((entry: { id: string }) => entry.id).sort()).toEqual(
+      project.entities.map((entity) => entity.id).sort(),
+    );
+    for (const entry of metadata.framing) {
+      expect(typeof entry.intersectsFrame).toBe('boolean');
+      expect(
+        Object.values(entry.screenBounds).every(
+          (value) => typeof value === 'number' && Number.isFinite(value),
+        ),
+      ).toBe(true);
+      expect(entry.note).toContain('occlusion');
+    }
+    expect(result.structuredContent).toEqual(metadata);
+    expect(metadata).not.toHaveProperty('image');
+    expect(await (await fetch(base + '/api/project')).json()).toEqual(project);
+  }, 45000);
+
+  it('queues parallel start/middle/end previews and returns each requested time and snapshot', async () => {
+    const project = textData(
+      await client.callTool({ name: 'read_project', arguments: {} }),
+    ) as Project;
+    const shot = project.shots[0];
+    const times = [0, shot.duration / 2, shot.duration - 1 / Number(project.fps)];
+    const results = await Promise.all(
+      times.map((time) =>
+        client.callTool({ name: 'preview_shot', arguments: { shotId: shot.id, time } }),
+      ),
+    );
+    for (let i = 0; i < results.length; i++) {
+      expect(results[i].isError).not.toBe(true);
+      expect(textData(results[i])).toMatchObject({
+        revision: project.revision,
+        shotId: shot.id,
+        time: times[i],
+      });
+      expect((results[i].content as { type: string }[]).some((c) => c.type === 'image')).toBe(true);
+    }
+  }, 45000);
 
   it('edits the shared project, replays safely, rejects stale writes and malformed operations', async () => {
     const project = textData(

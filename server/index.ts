@@ -129,7 +129,8 @@ app.get('/api/assets/:file', (req, res) => {
     res.sendStatus(400);
     return;
   }
-  res.sendFile(join(assets, req.params.file));
+  // The workspace defaults to .hengdian; only this hash-validated asset is exposed.
+  res.sendFile(join(assets, req.params.file), { dotfiles: 'allow' });
 });
 app.post('/api/preview', async (req, res) => {
   const input = z
@@ -158,7 +159,9 @@ app.get('/api/exports/:id/download', (req, res) => {
     res.status(404).json({ error: '尚无已完成文件' });
     return;
   }
-  res.download(join(exporter.dir, j.file), 'hengdian-' + j.id.slice(0, 8) + '.zip');
+  res.download(join(exporter.dir, j.file), 'hengdian-' + j.id.slice(0, 8) + '.zip', {
+    dotfiles: 'allow',
+  });
 });
 app.use('/api', (_, res) => res.status(404).json({ error: 'Unknown API route' }));
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) =>

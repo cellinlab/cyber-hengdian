@@ -46,7 +46,7 @@ npm run cli -- status
 npm run mcp
 ```
 
-MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接入配置见 [Agent 指南](docs/AGENTS.md)，工作流程见 [导演 Skill](.agents/skills/direct-hengdian/SKILL.md)。Codex / DeepSeek Harness 配置是接入示例；真实宿主中的模型能力需要分别验证。
+MCP 命令使用 stdio，适合由 Agent 宿主启动，不会显示网页。接入配置见 [Agent 指南](docs/AGENTS.md)，工作流程见 [导演 Skill](.agents/skills/direct-hengdian/SKILL.md)。已有登录的 Codex CLI 可运行 `npm run codex:direct -- examples/codex-courtyard/01-stage.md`；这会调用真实模型并修改当前片场，实验请使用独立工作空间。两轮自然语言导演案例、运行方法和实测边界见 [Codex 接入](docs/CODEX.md)。DeepSeek Harness 仍须独立实测。
 
 ## 建设自己的片场
 

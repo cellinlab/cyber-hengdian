@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"tools/**/*.ts\" \"tests/**/*.{ts,tsx}\" \"*.config.ts\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"tools/**/*.ts\" \"tests/**/*.{ts,tsx}\" \"*.config.ts\"",
-    "schema": "tsx tools/schemas.ts"
+    "schema": "tsx tools/schemas.ts",
+    "codex:direct": "tsx tools/codex-direct.ts"
   },
   "engines": {
     "node": ">=22.12"

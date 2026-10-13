@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { evaluate } from '../core/project';
+import { walkSwing } from './locomotion';
 import type { Project, Shot, Entity } from '../core/schema';
 export type Pass = 'rgb' | 'depth' | 'id';
 const material = (color: string) => new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
@@ -120,7 +121,7 @@ export function primitive(e: Entity) {
     for (const x of [-0.16, 0.16]) {
       const limb = new THREE.Group();
       limb.position.set(x, 0.8, 0);
-      limb.add(cylinder(0.095, 0.7, '#525b55', 0, -0.35));
+      limb.add(cylinder(0.095, 0.8, '#525b55', 0, -0.4));
       g.add(limb);
       limbs.push(limb);
     }
@@ -241,11 +242,8 @@ export class Stage {
       g.scale.fromArray(e.transform.scale);
       const limbs = g.userData.limbs as THREE.Group[] | undefined;
       const keys = shot.tracks[e.id] ?? [];
-      const moving =
-        keys.length > 1 && keys.some((k) => k.position.some((v, i) => v !== keys[0].position[i]));
-      limbs?.forEach(
-        (limb, i) => (limb.rotation.x = moving ? Math.sin(time * 5 + (i % 2) * Math.PI) * 0.35 : 0),
-      );
+      const swing = walkSwing(keys, state.time);
+      limbs?.forEach((limb, i) => (limb.rotation.x = (i % 2 ? -1 : 1) * swing));
     }
     this.camera.position.fromArray(state.camera.position);
     this.camera.lookAt(new THREE.Vector3(...state.camera.target));

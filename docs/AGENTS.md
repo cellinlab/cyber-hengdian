@@ -6,6 +6,8 @@ Start the app with `npm run dev`. Run `npm run cli -- --help` for direct command
 
 ## Codex
 
+For a real model session with invocation-scoped configuration and local evidence capture, use the [Codex launcher and two-turn example](CODEX.md). It connects to a running service and leaves the user's global configuration untouched.
+
 Example MCP configuration (replace the repository path with your installation):
 
 ```toml
@@ -57,6 +59,12 @@ DeepSeek model API compatibility and DeepSeek Harness integration are separate c
 
 ## Current verification boundary
 
-The automated MCP integration test launches the real local service with an isolated data directory, connects using the official SDK's stdio client, checks discovery/resource reads, applies edits through both MCP and CLI, retries a transaction idempotently, verifies conflict/error handling, and installs/selects two versions of an external pack. Preview protocol tests verify a missing-shot error; rendered-image and export validation belong to the browser/export tests. This proves the protocol and shared-state path. It does not prove actual model behavior, host configuration loading, screenshot understanding or end-to-end use inside Codex/DeepSeek Harness. Those host sessions must be tested separately before claiming native-host certification.
+The SDK integration suite runs the real isolated HTTP service and stdio server, checks tool discovery and resources, applies edits through MCP and CLI, verifies replay/conflicts and pack versions, and exercises actual parallel preview images. These checks prove the shared-state protocol; they do not establish model behavior by themselves.
 
-No external generation API, account setup, paid inference, automatic publishing or remote deployment is performed by this integration. An installed model that can call tools can direct structural edits; visual judgment still needs an image-capable model or human review.
+The separate [real Codex case](CODEX.md) uses the installed Codex CLI with its existing ChatGPT authentication and invocation-scoped MCP configuration. It exposed two issues missed by SDK-only testing: Codex rejected tuple-style JSON Schema during tool discovery, and the initial read-only/no-prompt configuration denied the editing tool. The MCP boundary now presents fixed-length numeric arrays while retaining strict core validation; the directing launcher explicitly authorizes only the requested scene-edit and export tools for that invocation. It does not relax shell permissions, change global configuration or bypass managed policy.
+
+The acceptance workflow uses two natural-language turns: build a three-shot courtyard meeting, inspect actual PNGs and correct occlusion, then revise only the second camera while preserving actors and motion, and export all three shots. Actual preview content, project readback, export files and independent playback review determine acceptance. CLI exit zero or a completed tool event alone is insufficient.
+
+This is local **Codex CLI** verification with Chrome/FFmpeg rendering. It does not establish native MCP use inside a Codex desktop chat, DeepSeek Harness compatibility, arbitrary-model vision quality or external video-generation quality. A model without image support cannot claim visual review from framing metadata.
+
+The scene service itself makes no language-model or external video-generation calls. The optional Codex launcher does invoke the authenticated Codex model and consumes the account's normal allowance. Neither path automatically publishes, deploys or sends exported material to a video-generation provider.

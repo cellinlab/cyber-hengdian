@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { unzipSync, strFromU8 } from 'fflate';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +9,8 @@ import { createServer } from 'node:net';
 import { identity, type Project } from '../src/core/schema';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const data = mkdtempSync(join(tmpdir(), 'hengdian-http-'));
+// Match the default hidden workspace. Non-hidden temp paths masked 404s from sendFile.
+const data = mkdtempSync(join(tmpdir(), '.hengdian-http-'));
 let processUnderTest: ChildProcess | undefined;
 let base: string;
 let output = '';
@@ -25,7 +27,7 @@ async function start() {
   base = `http://127.0.0.1:${port}`;
   processUnderTest = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], {
     cwd: root,
-    env: { ...process.env, NODE_ENV: 'production', PORT: String(port), HENGDIAN_DATA: data },
+    env: { ...process.env, NODE_ENV: 'test', PORT: String(port), HENGDIAN_DATA: data },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   output = '';
@@ -281,4 +283,40 @@ describe('real local HTTP service', () => {
     expect(redone.name).toBe(committed.name);
     expect(redone.revision).toBe(undone.revision + 1);
   });
+
+  it('downloads a real completed shooting pack from a hidden workspace', async () => {
+    const before = await getProject();
+    const updated = await post('/api/commands', {
+      ...edit(before, 'Short export'),
+      operations: [{ type: 'shot.update', id: before.shots[0].id, changes: { duration: 0.5 } }],
+    });
+    expect(updated.status).toBe(200);
+    const project = await updated.json();
+    const response = await post('/api/exports', {
+      baseRevision: project.revision,
+      shotId: project.shots[0].id,
+      size: 640,
+      controls: false,
+    });
+    expect(response.status).toBe(202);
+    let job = await response.json();
+    const deadline = Date.now() + 25000;
+    while (['queued', 'running'].includes(job.status) && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      job = (await (await fetch(base + '/api/exports')).json()).find(
+        (j: { id: string }) => j.id === job.id,
+      );
+    }
+    expect(job.status, job.error).toBe('complete');
+    const downloaded = await fetch(base + '/api/exports/' + job.id + '/download');
+    expect(downloaded.status).toBe(200);
+    expect(downloaded.headers.get('content-disposition')).toContain('attachment');
+    const bytes = Buffer.from(await downloaded.arrayBuffer());
+    expect(bytes).toEqual(readFileSync(join(data, 'exports', job.file)));
+    const files = unzipSync(bytes);
+    const manifest = JSON.parse(strFromU8(files['manifest.json']));
+    expect(manifest.frameCount).toBe(12);
+    expect(manifest.revision).toBe(project.revision);
+    expect(files['motion.mp4'].length).toBeGreaterThan(1000);
+  }, 30000);
 });
