@@ -148,3 +148,8 @@ vite.config.ts.timestamp-*
 # Python checks
 __pycache__/
 *.pyc
+
+# Local projects, generated media and browser evidence
+.hengdian/
+playwright-report/
+test-results/

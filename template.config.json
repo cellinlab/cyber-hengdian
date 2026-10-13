@@ -1,9 +1,9 @@
 {
-  "stage": "template",
+  "stage": "project",
   "owner": "cell",
   "project": {
-    "name": "",
-    "summary": ""
+    "name": "赛博横店 · Cyber Hengdian",
+    "summary": "面向创作者与 AI Agent 的开源虚拟片场基础设施。"
   },
   "cell": {
     "links": [

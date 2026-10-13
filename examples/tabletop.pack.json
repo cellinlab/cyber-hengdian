@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "hengdian-pack/1",
+  "id": "tabletop-demo",
+  "name": "桌面产品",
+  "description": "可替换产品的三镜头展示片场。",
+  "version": "1.0.0",
+  "author": "Cell",
+  "license": "MIT",
+  "project": {
+    "schemaVersion": "hengdian/1",
+    "id": "24b3b028-d650-41da-a7db-2ff2809c0203",
+    "name": "桌面产品 · 社区片场示例",
+    "revision": 0,
+    "fps": "24",
+    "aspect": "16:9",
+    "environment": "studio",
+    "packVersion": "1.0.0",
+    "entities": [
+      {
+        "id": "0dcecaf0-b5d6-45d5-86cf-d300d94b3019",
+        "kind": "product",
+        "name": "产品",
+        "color": "#75929a",
+        "transform": {
+          "position": [
+            0,
+            0.8,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ]
+        },
+        "locked": false
+      },
+      {
+        "id": "f99ef364-3540-489e-aafa-278d6b7a0cb3",
+        "kind": "cylinder",
+        "name": "圆柱",
+        "color": "#bbb7ab",
+        "transform": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1.8,
+            0.8,
+            1.8
+          ]
+        },
+        "locked": false
+      }
+    ],
+    "shots": [
+      {
+        "id": "d778605b-3d87-4eaf-89eb-532804c949eb",
+        "name": "建立空间",
+        "duration": 6,
+        "intent": "完整交代主体与环境",
+        "tracks": {},
+        "camera": {
+          "from": [
+            7,
+            4,
+            9
+          ],
+          "to": [
+            6,
+            3.5,
+            8
+          ],
+          "target": [
+            0,
+            1,
+            0
+          ],
+          "targetEnd": [
+            0,
+            1,
+            0
+          ],
+          "fov": 42,
+          "follow": null
+        }
+      },
+      {
+        "id": "d69a8db0-a8aa-4789-b945-aef809f570a9",
+        "name": "产品弧移",
+        "duration": 6,
+        "intent": "在一段弦线中展示轮廓",
+        "tracks": {},
+        "camera": {
+          "from": [
+            3,
+            2,
+            4
+          ],
+          "to": [
+            -3,
+            2,
+            4
+          ],
+          "target": [
+            0,
+            1,
+            0
+          ],
+          "targetEnd": [
+            0,
+            1,
+            0
+          ],
+          "fov": 42,
+          "follow": null
+        }
+      },
+      {
+        "id": "fd3b3b35-b2a0-4469-a25a-bcf2f3fd6cf4",
+        "name": "主体特写",
+        "duration": 6,
+        "intent": "集中于一个人的动作",
+        "tracks": {},
+        "camera": {
+          "from": [
+            1.4,
+            2.6,
+            3
+          ],
+          "to": [
+            1.2,
+            2.5,
+            2.6
+          ],
+          "target": [
+            0,
+            2,
+            0
+          ],
+          "targetEnd": [
+            0,
+            2,
+            0
+          ],
+          "fov": 42,
+          "follow": null
+        }
+      }
+    ],
+    "notes": []
+  }
+}
