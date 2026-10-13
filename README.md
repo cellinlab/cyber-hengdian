@@ -100,6 +100,14 @@ npm run test:e2e
 
 控制通道按不透明几何输出可见表面；深度为线性 8-bit，完整控制通道最多 720 帧。GLB 保留原单位与枢轴，默认使用首个动画。内置布景为预演精度，通过兼容运行时重建；拍摄包不包含它们的独立 GLB。详细格式见 [工程说明](docs/FORMAT.md)。
 
+## 学习与交流
+
+[**AI 影视短片制作｜从零到独立成片**](https://zaowujuzhen.com/r/RFAGZXABM)
+
+专栏配有专属交流群，一起交流 AI 视频创作、镜头设计与赛博横店实践。
+
+<a href="https://zaowujuzhen.com/r/RFAGZXABM"><img src="public/readme/ai-filmmaking-column.png" alt="AI 影视短片制作｜从零到独立成片专栏" width="420"></a>
+
 <!-- bip:project:end -->
 
 <!-- bip:creator:start -->

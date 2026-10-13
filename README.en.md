@@ -99,6 +99,14 @@ This is an early local workstation. Finished video generation happens in externa
 
 Control passes output visible surfaces and treat transparent geometry as opaque. Depth is linear 8-bit; full control-channel export is limited to 720 frames. GLBs retain their units and pivots and use the first animation by default. Built-in sets are previs geometry reconstructed by a compatible runtime; standalone GLBs are not included in shooting packs. See the [format guide](docs/FORMAT.md).
 
+## Learn and connect
+
+[**AI filmmaking: from zero to an independent short film**](https://zaowujuzhen.com/r/RFAGZXABM) (Chinese)
+
+The column includes a dedicated community group for discussing AI video creation, camera direction and Cyber Hengdian practice.
+
+<a href="https://zaowujuzhen.com/r/RFAGZXABM"><img src="public/readme/ai-filmmaking-column.png" alt="AI filmmaking column: from zero to an independent short film" width="420"></a>
+
 
 ## Author and license
 
