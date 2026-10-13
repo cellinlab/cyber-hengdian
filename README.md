@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-打开 **http://127.0.0.1:4317**，选择场景并开始拍摄。界面支持简体中文与 English。
+打开 [**http://127.0.0.1:4317**](http://127.0.0.1:4317/)，选择场景并开始拍摄。界面支持简体中文与 English。
 
 macOS 默认使用已安装的 Google Chrome。其他环境可运行 `npx playwright install chromium`，或用 `CHROME_PATH` 指定浏览器；用 `FFMPEG_PATH` 指定 FFmpeg。`PORT` 更改端口，`HENGDIAN_DATA` 更改工作空间目录。工程默认保存在被 Git 忽略的 `.hengdian/`，升级代码时保留该目录。
 

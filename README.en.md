@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-Open **http://127.0.0.1:4317**. The interface supports English and Simplified Chinese.
+Open [**http://127.0.0.1:4317**](http://127.0.0.1:4317/). The interface supports English and Simplified Chinese.
 
 On macOS, installed Google Chrome is used by default. Elsewhere, run `npx playwright install chromium` or set `CHROME_PATH`. Set `FFMPEG_PATH` to choose FFmpeg, `PORT` to choose a service port, and `HENGDIAN_DATA` to choose a workspace. Saved work lives in the Git-ignored `.hengdian/` directory by default; preserve it when updating code.
 
