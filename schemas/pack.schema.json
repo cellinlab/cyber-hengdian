@@ -1,0 +1,484 @@
+{
+  "$id": "urn:cyber-hengdian:pack:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "hengdian-pack/1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,63}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "id": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "name": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "revision": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "fps": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "aspect": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "environment": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "packVersion": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "resourcePack": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "entities": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "shots": {
+          "$ref": "#/$defs/__schema22"
+        },
+        "notes": {
+          "$ref": "#/$defs/__schema25"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "name",
+        "revision",
+        "fps",
+        "aspect",
+        "environment",
+        "packVersion",
+        "entities",
+        "shots",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "description",
+    "version",
+    "author",
+    "license",
+    "project"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "const": "hengdian/1"
+    },
+    "__schema1": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "__schema2": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "__schema3": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "__schema4": {
+      "type": "string",
+      "enum": [
+        "24",
+        "30",
+        "60"
+      ]
+    },
+    "__schema5": {
+      "type": "string",
+      "enum": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ]
+    },
+    "__schema6": {
+      "type": "string",
+      "enum": [
+        "courtyard",
+        "studio",
+        "exterior"
+      ]
+    },
+    "__schema7": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "__schema8": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "__schema9": {
+      "maxItems": 300,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema10"
+      }
+    },
+    "__schema10": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "name": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "kind": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "color": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "transform": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "locked": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "asset": {
+          "$ref": "#/$defs/__schema19"
+        },
+        "source": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "license": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "color",
+        "transform",
+        "locked"
+      ],
+      "additionalProperties": false
+    },
+    "__schema11": {
+      "type": "string",
+      "enum": [
+        "actor",
+        "box",
+        "sphere",
+        "cylinder",
+        "plant",
+        "chair",
+        "table",
+        "product",
+        "glb"
+      ]
+    },
+    "__schema12": {
+      "type": "string",
+      "pattern": "^#[\\da-fA-F]{6}$"
+    },
+    "__schema13": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "rotation": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "scale": {
+          "$ref": "#/$defs/__schema17"
+        }
+      },
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "additionalProperties": false
+    },
+    "__schema14": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/__schema15"
+        },
+        {
+          "$ref": "#/$defs/__schema15"
+        },
+        {
+          "$ref": "#/$defs/__schema15"
+        }
+      ],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "__schema15": {
+      "type": "number"
+    },
+    "__schema16": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/__schema15"
+        },
+        {
+          "$ref": "#/$defs/__schema15"
+        },
+        {
+          "$ref": "#/$defs/__schema15"
+        },
+        {
+          "$ref": "#/$defs/__schema15"
+        }
+      ],
+      "items": false,
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "__schema17": {
+      "$ref": "#/$defs/__schema14"
+    },
+    "__schema18": {
+      "type": "boolean"
+    },
+    "__schema19": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}\\.glb$"
+    },
+    "__schema20": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "__schema21": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "__schema22": {
+      "minItems": 1,
+      "maxItems": 100,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema23"
+      }
+    },
+    "__schema23": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "name": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 30,
+          "$ref": "#/$defs/__schema15"
+        },
+        "camera": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "to": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "target": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "targetEnd": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "fov": {
+              "type": "number",
+              "minimum": 10,
+              "maximum": 100,
+              "$ref": "#/$defs/__schema15"
+            },
+            "follow": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/__schema1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "from",
+            "to",
+            "target",
+            "targetEnd",
+            "fov",
+            "follow"
+          ],
+          "additionalProperties": false
+        },
+        "tracks": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema24"
+            }
+          }
+        },
+        "intent": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "duration",
+        "camera",
+        "tracks",
+        "intent"
+      ],
+      "additionalProperties": false
+    },
+    "__schema24": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "rotation": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "scale": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 120,
+          "$ref": "#/$defs/__schema15"
+        }
+      },
+      "required": [
+        "position",
+        "rotation",
+        "scale",
+        "time"
+      ],
+      "additionalProperties": false
+    },
+    "__schema25": {
+      "maxItems": 1000,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema26"
+      }
+    },
+    "__schema26": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "shotId": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "entityId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time": {
+          "minimum": 0,
+          "$ref": "#/$defs/__schema15"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "id",
+        "shotId",
+        "entityId",
+        "time",
+        "text"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

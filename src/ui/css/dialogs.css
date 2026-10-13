@@ -1,0 +1,303 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: #080c08c9;
+  backdrop-filter: blur(7px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+}
+.modal {
+  width: 560px;
+  max-width: 100%;
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 28px;
+  background: #252c20;
+  border: 1px solid #4d5e3e;
+  border-radius: 12px;
+  box-shadow: 0 30px 100px #0008;
+  scrollbar-width: thin;
+  outline: none;
+}
+.modal > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 23px;
+  gap: 20px;
+}
+.modal > header > button {
+  padding: 5px;
+  min-height: 25px;
+  color: #a7b398;
+}
+.modal-intro {
+  font-size: 11px;
+  color: #acbba0;
+  line-height: 1.8;
+  margin-bottom: 22px;
+}
+.modal .field input,
+.modal .field select {
+  font-size: 12px;
+  padding: 10px;
+}
+.modal .field > span {
+  font-size: 10px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+}
+.modal-actions button {
+  background: #3a4a2d;
+  font-size: 11px;
+  border: 1px solid #596d43;
+}
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #303d26;
+  border: 1px solid #4b6339;
+  border-radius: 5px;
+  padding: 12px;
+  font-size: 10px;
+}
+.connection-status code {
+  font-size: 10px;
+  margin-left: auto;
+  color: #b5ce9a;
+}
+.modal pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #171d13;
+  padding: 17px;
+  border: 1px solid #3b4a2d;
+  border-radius: 5px;
+  color: #b5cc9d;
+  font-size: 10px;
+  line-height: 1.9;
+}
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+.recipe-grid button {
+  padding: 15px 12px;
+  align-items: flex-start;
+  flex-direction: column;
+  border: 1px solid #485c34;
+  background: #2e3a24;
+  text-align: left;
+  position: relative;
+  gap: 0;
+}
+.recipe-grid button:hover {
+  border-color: var(--accent);
+  background: #3e502e;
+}
+.recipe-grid button > span {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #8fa873;
+  font-size: 9px;
+  margin-bottom: 22px;
+}
+.recipe-grid strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.recipe-grid small {
+  font-size: 9px;
+  color: #8fa978;
+  margin-top: 7px;
+  line-height: 1.7;
+}
+.recipe-grid button > svg:last-child {
+  position: absolute;
+  right: 10px;
+  bottom: 11px;
+  color: #89a46a;
+}
+.note-context {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #b4c69c;
+  font-size: 10px;
+  margin-bottom: 12px;
+}
+.note-context span {
+  background: #3c4c2e;
+  padding: 3px 5px;
+  border-radius: 3px;
+}
+.modal textarea {
+  margin-bottom: 12px;
+}
+.notes-list {
+  margin-top: 25px;
+}
+.notes-list article {
+  border-top: 1px solid #485637;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.notes-list article header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.notes-list article header > button:first-child {
+  font-size: 10px;
+  color: #a3bb85;
+  padding: 0;
+}
+.notes-list article header > button:last-child {
+  padding: 3px;
+  min-height: 24px;
+}
+.notes-list p {
+  font-size: 12px;
+  white-space: pre-wrap;
+  margin: 9px 0;
+  line-height: 1.8;
+}
+.empty {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #899b76;
+  padding: 10px 0;
+}
+.export-summary {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 16px;
+  background: #334127;
+  border: 1px solid #546b3c;
+  border-radius: 5px;
+  margin-bottom: 21px;
+  color: #c6d9ad;
+}
+.export-summary strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+.export-summary small {
+  display: block;
+  margin-top: 6px;
+  color: #8fa874;
+  font-size: 9px;
+}
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 11px;
+  margin: 20px 0;
+}
+.checkbox-field input {
+  margin: 1px 0 0;
+  flex-shrink: 0;
+}
+.checkbox-field small {
+  display: block;
+  color: #879f6e;
+  font-size: 9px;
+  margin-top: 6px;
+  line-height: 1.7;
+}
+.export-jobs article {
+  border-top: 1px solid #485c35;
+  padding-top: 17px;
+  margin-top: 17px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.export-jobs article > div {
+  flex: 1;
+  min-width: 110px;
+}
+.export-jobs strong {
+  font-weight: 500;
+  font-size: 11px;
+}
+.export-jobs span {
+  display: block;
+  color: #829c68;
+  font-size: 9px;
+  margin-top: 6px;
+}
+.export-jobs progress {
+  width: 110px;
+  height: 5px;
+  accent-color: var(--accent);
+}
+.export-jobs button {
+  font-size: 10px;
+}
+.download-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  background: #4b6036;
+  padding: 8px 10px;
+  border: 1px solid #6e8d4d;
+  border-radius: 4px;
+  color: #d5ecbc;
+}
+.job-error {
+  width: 100%;
+  font-size: 10px;
+  color: #deb69b;
+  overflow-wrap: anywhere;
+  margin: 5px 0 0;
+}
+.hidden-input {
+  display: none;
+}
+.mobile-tabs {
+  display: none;
+}
+.boot {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.boot h1 {
+  font-weight: 500;
+  letter-spacing: 3px;
+  font-size: 22px;
+  margin: 20px 0 5px;
+}
+.boot p {
+  color: #9daf8b;
+}
+.boot .brand-mark {
+  height: 50px;
+  width: 50px;
+  line-height: 48px;
+  font-size: 39px;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}

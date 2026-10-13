@@ -19,7 +19,10 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:4331',
     viewport: { width: 1440, height: 960 },
-    launchOptions: { executablePath: process.env.CHROME_PATH || (existsSync(systemChrome) ? systemChrome : undefined) },
+    launchOptions: {
+      executablePath:
+        process.env.CHROME_PATH || (existsSync(systemChrome) ? systemChrome : undefined),
+    },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },

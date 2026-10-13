@@ -1,0 +1,72 @@
+/* Neutral editing surfaces keep the warm scene and action accent in focus. */
+.timeline {
+  background: #252923;
+  border-top-color: #42483b;
+}
+.shot-card {
+  background: #2c3426;
+}
+.shot-card.selected {
+  background: #3b4931;
+}
+.timeline-top > button {
+  background: #343e2d;
+}
+.modal {
+  background: #282e24;
+}
+.mode-camera .canvas-wrap {
+  max-width: none;
+  flex-shrink: 0;
+}
+.error-banner {
+  z-index: 90;
+}
+.installed-packs {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 23px;
+}
+.installed-packs button {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  border: 1px solid #47523d;
+  padding: 10px 8px;
+  font-size: 10px;
+  background: #2c3426;
+}
+.installed-packs button > span {
+  flex: 1;
+}
+.installed-packs small {
+  display: block;
+  font-size: 8px;
+  color: #8d9e7b;
+  margin-top: 5px;
+}
+.object-actions {
+  margin-top: 12px;
+}
+
+.shot-art.has-thumbnail {
+  background: #131711;
+}
+.shot-art.has-thumbnail:after {
+  display: none;
+}
+.shot-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.shot-art.has-thumbnail > span,
+.shot-art.has-thumbnail > small {
+  z-index: 1;
+  background: #17220ccc;
+  padding: 2px 4px;
+  border-radius: 2px;
+  text-shadow: 0 1px 3px #0008;
+}

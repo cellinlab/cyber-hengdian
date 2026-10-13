@@ -1,6 +1,6 @@
 # 开放工程与片场包
 
-真源定义在 `src/core/schema.ts`，服务的 `GET /api/schema` 返回机器可读 JSON Schema。当前 schemaVersion 是 `hengdian/1`；不支持的版本显式拒绝。
+真源定义在 `src/core/schema.ts`，服务的 `GET /api/schema` 返回机器可读 JSON Schema。离线定义见 [工程 JSON Schema](../schemas/project.schema.json)、[事务 JSON Schema](../schemas/transaction.schema.json) 和 [资源包 JSON Schema](../schemas/pack.schema.json)。这些文件由 `npm run schema` 生成，`npm run check` 会阻止定义漂移；跨对象引用与时间关系仍需运行核心验证。当前 schemaVersion 是 `hengdian/1`；不支持的版本显式拒绝。
 
 ## 坐标与时间
 

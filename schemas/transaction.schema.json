@@ -1,0 +1,627 @@
+{
+  "$id": "urn:cyber-hengdian:transaction:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "requestId": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "baseRevision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "label": {
+      "$ref": "#/$defs/__schema1"
+    },
+    "operations": {
+      "minItems": 1,
+      "maxItems": 200,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema2"
+      }
+    }
+  },
+  "required": [
+    "requestId",
+    "baseRevision",
+    "label",
+    "operations"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "__schema1": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "__schema2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "project.update"
+            },
+            "name": {
+              "$ref": "#/$defs/__schema1"
+            },
+            "aspect": {
+              "type": "string",
+              "enum": [
+                "16:9",
+                "9:16",
+                "1:1"
+              ]
+            },
+            "fps": {
+              "type": "string",
+              "enum": [
+                "24",
+                "30",
+                "60"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "entity.add"
+            },
+            "entity": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "name": {
+                  "$ref": "#/$defs/__schema1"
+                },
+                "kind": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "color": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "transform": {
+                  "$ref": "#/$defs/__schema5"
+                },
+                "locked": {
+                  "$ref": "#/$defs/__schema10"
+                },
+                "asset": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "source": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "license": {
+                  "$ref": "#/$defs/__schema13"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "kind",
+                "color",
+                "transform",
+                "locked"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "entity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "entity.update"
+            },
+            "id": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "changes": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "actor",
+                    "box",
+                    "sphere",
+                    "cylinder",
+                    "plant",
+                    "chair",
+                    "table",
+                    "product",
+                    "glb"
+                  ]
+                },
+                "asset": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}\\.glb$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "source": {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                "license": {
+                  "type": "string",
+                  "maxLength": 160
+                },
+                "name": {
+                  "$ref": "#/$defs/__schema1"
+                },
+                "color": {
+                  "type": "string",
+                  "pattern": "^#[\\da-fA-F]{6}$"
+                },
+                "transform": {
+                  "$ref": "#/$defs/__schema5"
+                },
+                "locked": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "changes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "entity.remove"
+            },
+            "id": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "required": [
+            "type",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "shot.add"
+            },
+            "shot": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "name": {
+                  "$ref": "#/$defs/__schema1"
+                },
+                "duration": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "camera": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "tracks": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/__schema16"
+                    }
+                  }
+                },
+                "intent": {
+                  "$ref": "#/$defs/__schema17"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "duration",
+                "camera",
+                "tracks",
+                "intent"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "shot"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "shot.update"
+            },
+            "id": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "changes": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "$ref": "#/$defs/__schema1"
+                },
+                "duration": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "camera": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "intent": {
+                  "$ref": "#/$defs/__schema17"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "id",
+            "changes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "shot.remove"
+            },
+            "id": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "required": [
+            "type",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "key.set"
+            },
+            "shotId": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "entityId": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "key": {
+              "$ref": "#/$defs/__schema16"
+            }
+          },
+          "required": [
+            "type",
+            "shotId",
+            "entityId",
+            "key"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "key.remove"
+            },
+            "shotId": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "entityId": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "time": {
+              "$ref": "#/$defs/__schema7"
+            }
+          },
+          "required": [
+            "type",
+            "shotId",
+            "entityId",
+            "time"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "note.add"
+            },
+            "note": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "shotId": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "entityId": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "time": {
+                  "minimum": 0,
+                  "$ref": "#/$defs/__schema7"
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "required": [
+                "id",
+                "shotId",
+                "entityId",
+                "time",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "note"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "note.remove"
+            },
+            "id": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "required": [
+            "type",
+            "id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "__schema3": {
+      "type": "string",
+      "enum": [
+        "actor",
+        "box",
+        "sphere",
+        "cylinder",
+        "plant",
+        "chair",
+        "table",
+        "product",
+        "glb"
+      ]
+    },
+    "__schema4": {
+      "type": "string",
+      "pattern": "^#[\\da-fA-F]{6}$"
+    },
+    "__schema5": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "rotation": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "scale": {
+          "$ref": "#/$defs/__schema9"
+        }
+      },
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "additionalProperties": false
+    },
+    "__schema6": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/__schema7"
+        },
+        {
+          "$ref": "#/$defs/__schema7"
+        },
+        {
+          "$ref": "#/$defs/__schema7"
+        }
+      ],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "__schema7": {
+      "type": "number"
+    },
+    "__schema8": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/__schema7"
+        },
+        {
+          "$ref": "#/$defs/__schema7"
+        },
+        {
+          "$ref": "#/$defs/__schema7"
+        },
+        {
+          "$ref": "#/$defs/__schema7"
+        }
+      ],
+      "items": false,
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "__schema9": {
+      "$ref": "#/$defs/__schema6"
+    },
+    "__schema10": {
+      "type": "boolean"
+    },
+    "__schema11": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}\\.glb$"
+    },
+    "__schema12": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "__schema13": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "__schema14": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 30,
+      "$ref": "#/$defs/__schema7"
+    },
+    "__schema15": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "to": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "target": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "targetEnd": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "fov": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 100,
+          "$ref": "#/$defs/__schema7"
+        },
+        "follow": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema0"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "target",
+        "targetEnd",
+        "fov",
+        "follow"
+      ],
+      "additionalProperties": false
+    },
+    "__schema16": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "rotation": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "scale": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "time": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 120,
+          "$ref": "#/$defs/__schema7"
+        }
+      },
+      "required": [
+        "position",
+        "rotation",
+        "scale",
+        "time"
+      ],
+      "additionalProperties": false
+    },
+    "__schema17": {
+      "type": "string",
+      "maxLength": 2000
+    }
+  }
+}

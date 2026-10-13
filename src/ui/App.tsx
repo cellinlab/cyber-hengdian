@@ -1,81 +1,551 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Euler, Quaternion } from 'three';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { unzipSync, strFromU8 } from 'fflate';
-import { packs, props, recipes, newEntity, newShot } from '../core/catalog';
+import { packs, newEntity } from '../core/catalog';
 import { evaluate } from '../core/project';
-import { uid, projectSchema, type Project, type Entity, type Operation, type Transform, type Shot, type Vec3 } from '../core/schema';
-import { api, download } from './api';
+import {
+  uid,
+  projectSchema,
+  type Project,
+  type Entity,
+  type Operation,
+  type Transform,
+  type Shot,
+} from '../core/schema';
+import { api } from './api';
 import { Viewport } from './Viewport';
-import { Icon, type IconName } from './Icons';
-type History={canUndo:boolean,canRedo:boolean};
-type Job={id:string,status:'queued'|'running'|'complete'|'failed'|'cancelled',progress:number,error?:string,revision:number,shotId:string};
-type PackInfo={id:string,name:string,version:string,author:string,license:string,builtin:boolean};
-type Modal='export'|'connect'|'recipes'|'notes'|'project'|null;
-const pad=(v:number)=>String(v).padStart(2,'0');
-const clock=(t:number,fps:string)=>`${pad(Math.floor(t/60))}:${pad(Math.floor(t)%60)}:${pad(Math.floor((t%1)*Number(fps)))}`;
-function Button({icon,children,active=false,...rest}:{icon?:IconName,children?:ReactNode,active?:boolean}&React.ButtonHTMLAttributes<HTMLButtonElement>){return <button {...rest} className={`${rest.className??''} ${active?'active':''}`}>{icon&&<Icon name={icon}/>} {children}</button>;}
-function Field({label,value,onCommit,type='text',step,min,max,disabled=false}:{label:string,value:string|number,onCommit:(v:string)=>void,type?:string,step?:number,min?:number,max?:number,disabled?:boolean}){
- const [draft,setDraft]=useState(String(value));const cancelled=useRef(false);useEffect(()=>setDraft(String(value)),[value]);
- return <label className="field"><span>{label}</span><input aria-label={label} value={draft} type={type} step={step} min={min} max={max} disabled={disabled} onChange={e=>setDraft(e.target.value)} onBlur={()=>{if(cancelled.current){cancelled.current=false;return;}if(draft!==String(value))onCommit(draft);}} onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur();if(e.key==='Escape'){cancelled.current=true;setDraft(String(value));e.currentTarget.blur();}}}/></label>;
-}
-function Vector({label,value,onCommit,disabled=false}:{label:string,value:Vec3,onCommit:(v:Vec3)=>void,disabled?:boolean}){return <div className="vector"><label>{label}</label><div>{value.map((v,i)=><Field key={i} label={`${label} ${'XYZ'[i]}`} value={Math.round(v*1000)/1000} type="number" step={.1} disabled={disabled} onCommit={s=>{const next=[...value] as Vec3;next[i]=Number(s);onCommit(next);}}/>)}</div></div>;}
-function ModalShell({title,kicker,children,onClose}:{title:string,kicker:string,children:ReactNode,onClose:()=>void}){const ref=useRef<HTMLDivElement>(null);useEffect(()=>{const last=document.activeElement as HTMLElement;ref.current?.focus();return()=>last?.focus();},[]);return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><div className="modal" role="dialog" aria-modal="true" aria-label={title} ref={ref} tabIndex={-1} onKeyDown={e=>{if(e.key==='Escape')onClose();if(e.key==='Tab'){const items=ref.current?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea,a[href]');if(!items?.length)return;const first=items[0],last=items[items.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}}><header><div><span className="eyebrow">{kicker}</span><h2>{title}</h2></div><Button aria-label="关闭窗口" icon="close" onClick={onClose}/></header>{children}</div></div>;}
-export function App(){
- const [project,setProject]=useState<Project|null>(null),projectRef=useRef<Project|null>(null);
- const [thumbnails,setThumbnails]=useState<Record<string,string>>({});
- const [shotId,setShotId]=useState(''),[selection,setSelection]=useState<string|null>(null),[time,setTime]=useState(0),[playing,setPlaying]=useState(false);
- const [mode,setMode]=useState<'stage'|'camera'>('camera'),[tool,setTool]=useState<'translate'|'rotate'|'scale'>('translate');
- const [tab,setTab]=useState<'assets'|'objects'>('assets'),[mobilePanel,setMobilePanel]=useState<'assets'|'inspect'|null>(null);
- const [modal,setModal]=useState<Modal>(null),[error,setError]=useState(''),[status,setStatus]=useState('正在连接'),[busy,setBusy]=useState(false),[history,setHistory]=useState<History>({canUndo:false,canRedo:false});
- const [installedPacks,setInstalledPacks]=useState<PackInfo[]>([]);
- const [jobs,setJobs]=useState<Job[]>([]),[exportSize,setExportSize]=useState<640|1280>(1280),[controls,setControls]=useState(false),[note,setNote]=useState('');
- const fileRef=useRef<HTMLInputElement>(null),modelRef=useRef<HTMLInputElement>(null),replaceModelRef=useRef<HTMLInputElement>(null);
- const accept=useCallback((p:Project)=>{if(projectRef.current&&p.revision<projectRef.current.revision)return;projectRef.current=p;setProject(p);setShotId(id=>p.shots.some(s=>s.id===id)?id:p.shots[0].id);setSelection(id=>p.entities.some(e=>e.id===id)?id:null);setStatus('已保存到本地');void api<History>('history').then(setHistory).catch(()=>{});void api<PackInfo[]>('packs').then(p=>setInstalledPacks(p.filter(x=>!x.builtin))).catch(()=>{});},[]);
- const refresh=useCallback(async()=>{accept(await api<Project>('project'));},[accept]);
- useEffect(()=>{void refresh().catch(e=>{setError(e.message);setStatus('连接失败');});const events=new EventSource('/api/events');events.onmessage=()=>void refresh().catch(e=>{setStatus('同步中断');setError(e.message);});events.onerror=()=>setStatus('连接中断 · 正在重连');events.onopen=()=>setStatus('已连接本地服务');return()=>events.close();},[refresh]);
- const perform=async(action:()=>Promise<Project>)=>{if(busy)return;setBusy(true);setError('');setStatus('正在保存…');try{accept(await action());return true;}catch(e){setError(e instanceof Error?e.message:String(e));setStatus('修改未保存');try{await refresh();}catch{/* keep the actionable original error */}setStatus('修改未应用');return false;}finally{setBusy(false);}};
- const command=(operations:Operation[],label:string,revision=projectRef.current!.revision)=>perform(()=>api<Project>('commands',{requestId:uid(),baseRevision:revision,label,operations}));
- const shot=project?.shots.find(s=>s.id===shotId)??project?.shots[0];
- const entity=project?.entities.find(e=>e.id===selection);
- const sampled=project&&shot?evaluate(project,shot,time).entities.find(e=>e.id===selection):undefined;
- useEffect(()=>{if(shot)setTime(t=>Math.min(t,shot.duration));},[shot?.duration,shotId]);
- useEffect(()=>{if(!playing||!shot)return;let frame=0,previous=performance.now();const tick=(now:number)=>{const dt=(now-previous)/1000;previous=now;setTime(t=>{const next=t+dt;if(next>=shot.duration){setPlaying(false);return shot.duration;}return next;});frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[playing,shot?.id,shot?.duration]);
- useEffect(()=>{if(modal!=='export')return;const poll=()=>void api<Job[]>('exports').then(setJobs).catch(e=>setError(e.message));poll();const timer=setInterval(poll,1200);return()=>clearInterval(timer);},[modal]);
- const transform=(id:string,t:Transform,revision:number)=>{if(!project||!shot)return;const target=project.entities.find(e=>e.id===id);if(!target)return;const hasKeys=!!shot.tracks[id]?.length;const ops:Operation[]=[];if(time>0||hasKeys){if(!hasKeys&&time>0)ops.push({type:'key.set',shotId:shot.id,entityId:id,key:{...target.transform,time:0}});ops.push({type:'key.set',shotId:shot.id,entityId:id,key:{...t,time:Math.min(shot.duration,Math.round(time*Number(project.fps))/Number(project.fps))}});}else ops.push({type:'entity.update',id,changes:{transform:t}});void command(ops,'调整 '+target.name,revision);};
- const editShot=(changes:Partial<Omit<Shot,'id'|'tracks'>>)=>{if(shot)void command([{type:'shot.update',id:shot.id,changes}],'修改镜头');};
- const selectShot=(id:string)=>{setShotId(id);setTime(0);setPlaying(false);};
- const addObject=(kind:Entity['kind'])=>{const e=newEntity(kind);void command([{type:'entity.add',entity:e}],'加入 '+e.name).then(()=>{if(projectRef.current?.entities.some(x=>x.id===e.id)){setSelection(e.id);setTab('objects');setMode('stage');}});};
- const duplicate=()=>{if(!entity)return;const copy=structuredClone(entity);copy.id=uid();copy.name+=' 副本';copy.locked=false;copy.transform=structuredClone(sampled?.transform??entity.transform);copy.transform.position[0]+=.7;void command([{type:'entity.add',entity:copy}],'复制对象').then(()=>setSelection(copy.id));};
- const uploadAsset=async(bytes:Uint8Array|File)=>{const res=await fetch('/api/assets',{method:'POST',headers:{'Content-Type':'model/gltf-binary'},body:bytes instanceof File?bytes:new Blob([bytes as Uint8Array<ArrayBuffer>])});const data=await res.json();if(!res.ok)throw Error(data.error||'模型上传失败');return data.asset as string;};
- const importProject=async(file:File)=>{if(!project||!window.confirm('导入会替换当前工程。已有修改已保存，导入后可用撤销恢复。继续导入？'))return;const revision=project.revision;await perform(async()=>{let p:Project;if(file.name.toLowerCase().endsWith('.zip')){const files=unzipSync(new Uint8Array(await file.arrayBuffer()));const json=files['project.hengdian.json'];if(!json)throw Error('工程包中缺少 project.hengdian.json');p=projectSchema.parse(JSON.parse(strFromU8(json)));for(const asset of new Set(p.entities.map(e=>e.asset).filter(Boolean))){const bytes=files['assets/'+asset];if(!bytes)throw Error('工程包缺少模型：'+asset);if(await uploadAsset(bytes)!==asset)throw Error('模型内容与工程引用不一致');}}else{const parsed=JSON.parse(await file.text());if(parsed.schemaVersion==='hengdian-pack/1'){const installed=await api<{id:string,version:string}>('packs',{pack:parsed});return api<Project>(`packs/${encodeURIComponent(installed.id)}/instantiate`,{baseRevision:revision,version:installed.version});}p=projectSchema.parse(parsed);}return api<Project>('import',{project:p,baseRevision:revision});});setTime(0);setPlaying(false);};
- const importModel=async(file:File,replaceId?:string)=>{if(!project)return;const revision=project.revision;await perform(async()=>{const asset=await uploadAsset(file);const e:Entity={...newEntity('glb'),name:file.name.replace(/\.glb$/i,'').slice(0,160)||'导入模型',asset,source:file.name};const result=await api<Project>('commands',{requestId:uid(),baseRevision:revision,label:'导入模型',operations:[replaceId?{type:'entity.update',id:replaceId,changes:{kind:'glb',asset,source:file.name,license:''}}:{type:'entity.add',entity:e}]});setSelection(replaceId??e.id);setTab('objects');setMode('stage');return result;});};
- if(!project||!shot)return <main className="boot"><div className="brand-mark">H</div><h1>赛博横店</h1><p>{error||'准备你的下一场拍摄…'}</p>{error&&<Button icon="rotate" onClick={()=>void refresh().catch(e=>setError(e.message))}>重新连接</Button>}</main>;
- const selectedKeys=selection?shot.tracks[selection]??[]:[];
- const setTransform=(change:Partial<Transform>)=>{if(sampled)transform(sampled.id,{...sampled.transform,...change},project.revision);};
- const rotation=sampled?new Euler().setFromQuaternion(new Quaternion(...sampled.transform.rotation),'XYZ'):null;
- const currentPack=packs.find(p=>p.id===project.environment)!;
- const total=project.shots.reduce((n,s)=>n+s.duration,0);
- return <main className="workspace">
-  <header className="topbar"><a className="brand" href="/" aria-label="赛博横店首页"><span className="brand-mark">H</span><span>赛博横店<small>CYBER HENGDIAN</small></span></a><span className="top-divider"/><button className="project-title" onClick={()=>setModal('project')}><span>{project.name}</span><small>本地工程 <span>⌄</span></small></button><div className="save-state" aria-live="polite"><span className={busy?'saving-dot':'live-dot'}/>{status}<span className="revision">r{project.revision}</span></div><nav className="top-actions"><Button icon="undo" aria-label="撤销" title="撤销" disabled={!history.canUndo||busy} onClick={()=>void perform(()=>api<Project>('history/undo',{baseRevision:project.revision}))}/><Button icon="redo" aria-label="重做" title="重做" disabled={!history.canRedo||busy} onClick={()=>void perform(()=>api<Project>('history/redo',{baseRevision:project.revision}))}/><span className="top-divider"/><Button icon="link" onClick={()=>setModal('connect')}><span className="hide-small">连接 Agent</span></Button><Button className="primary" icon="download" onClick={()=>setModal('export')}>导出<span className="hide-small">拍摄包</span></Button></nav></header>
-  {error&&<div className="error-banner" role="alert"><span>{error}</span><Button icon="close" aria-label="关闭错误提示" onClick={()=>setError('')}/></div>}
-  <div className="mobile-tabs"><Button icon="layers" active={mobilePanel==='assets'} onClick={()=>setMobilePanel(mobilePanel==='assets'?null:'assets')}>资源</Button><span>导演工作台</span><Button icon="move" active={mobilePanel==='inspect'} onClick={()=>setMobilePanel(mobilePanel==='inspect'?null:'inspect')}>检查器</Button></div>
-  <div className="workbody">
-   <aside className={'library '+(mobilePanel==='assets'?'mobile-open':'')} aria-label="片场资源"><div className="panel-tabs"><button className={tab==='assets'?'selected':''} onClick={()=>setTab('assets')}>资源库</button><button className={tab==='objects'?'selected':''} onClick={()=>setTab('objects')}>场内对象 <span>{project.entities.length}</span></button></div>
-    <div className="panel-scroll">{tab==='assets'?<><div className="section-heading"><span>选择片场</span><span>03</span></div><div className="pack-list">{packs.map((p,i)=><button key={p.id} className={'pack-card '+(p.id===project.environment?'selected':'')} onClick={()=>{if(p.id===project.environment)return;if(window.confirm(`切换到「${p.name}」会载入一套新工程。当前工程可用撤销恢复。继续？`))void perform(()=>api<Project>('new',{environment:p.id,baseRevision:project.revision})).then(()=>{setTime(0);setPlaying(false);});}}><div className={'pack-art art-'+p.id}><i/><i/><i/><span>0{i+1}</span></div><div className="pack-copy"><strong>{p.name}</strong><small>{p.subtitle}</small></div>{p.id===project.environment&&<Icon name="check" size={14}/>}</button>)}</div>{installedPacks.length>0&&<><div className="section-heading"><span>已安装片场</span><span>{installedPacks.length}</span></div><div className="installed-packs">{installedPacks.map(p=><button key={p.id+'@'+p.version} disabled={busy} onClick={()=>{if(window.confirm(`载入「${p.name}」将替换当前工程，可撤销恢复。继续？`))void perform(()=>api<Project>(`packs/${encodeURIComponent(p.id)}/instantiate`,{baseRevision:project.revision,version:p.version})).then(()=>{setTime(0);setPlaying(false);});}}><Icon name="folder"/><span>{p.name}<small>{p.author} · v{p.version} · {p.license}</small></span><Icon name="chevron" size={12}/></button>)}</div></>}<div className="section-heading"><span>加入场景</span><span>08</span></div><div className="prop-grid">{props.map(p=><button key={p.kind} disabled={busy} onClick={()=>addObject(p.kind)}><span className={'prop-glyph glyph-'+p.kind} style={{color:p.color}}><Icon name={p.kind==='actor'?'move':p.kind==='product'?'cube':p.kind==='plant'?'layers':'cube'} size={22}/></span>{p.name}<Icon name="plus" size={12}/></button>)}</div><button className="import-model" onClick={()=>modelRef.current?.click()} disabled={busy}><Icon name="upload"/><span>导入 3D 模型<small>自包含 GLB · 最大 50 MB</small></span></button><button className="import-model" onClick={()=>fileRef.current?.click()} disabled={busy}><Icon name="folder"/><span>导入片场包<small>开放资源包 JSON / 工程 ZIP</small></span></button><div className="library-footnote"><span className="eyebrow">OPEN SETS / V1</span><p>搭一次片场，让不同的人和 AI 接着拍。</p><small>内置资源包 1.0.0 · MIT</small></div></>:<><div className="section-heading"><span>{currentPack.name}</span><Button icon="plus" aria-label="打开资源库" onClick={()=>setTab('assets')}/></div><div className="object-list">{project.entities.map(e=><button key={e.id} className={selection===e.id?'selected':''} onClick={()=>{setSelection(e.id);setMobilePanel(null);}}><span className="object-swatch" style={{background:e.color}}/><span>{e.name}<small>{e.kind.toUpperCase()}</small></span><Icon name={e.locked?'lock':'cube'} size={14}/></button>)}</div>{!project.entities.length&&<p className="empty">这里还是空的。去资源库加入第一个主角。</p>}</>}</div>
-   </aside>
-   <section className="stage-area" aria-label="导演画面"><div className="stage-toolbar"><div className="segmented"><Button icon="camera" active={mode==='camera'} onClick={()=>setMode('camera')}>摄影机</Button><Button icon="cube" active={mode==='stage'} onClick={()=>setMode('stage')}>自由布置</Button></div><div className="stage-toolset">{(['translate','rotate','scale'] as const).map((t,i)=><Button key={t} icon={(['move','rotate','scale'] as const)[i]} active={mode==='stage'&&tool===t} title={['移动','旋转','缩放'][i]} aria-label={['移动对象','旋转对象','缩放对象'][i]} onClick={()=>{setTool(t);setMode('stage');}}/>)}</div><Button className="notes-button" icon="note" onClick={()=>setModal('notes')}>批注 <span>{project.notes.length}</span></Button></div>
-    <Viewport onThumbnails={(images,revision)=>{if(revision===projectRef.current?.revision)setThumbnails(images);}} project={project} shot={shot} time={time} selection={selection} mode={mode} tool={tool} onSelect={id=>{setSelection(id);if(id)setTab('objects');}} onTransform={transform} onCapture={(position,target)=>editShot({camera:{...shot.camera,from:position,target}})}/>
-    <div className="stage-caption"><span><i/> {currentPack.name} <span className="muted">/</span> {shot.name}</span><span>{selection?`已选择 ${entity?.name??''}`:'空间先有秩序，故事才有自由。'}</span></div>
-   </section>
-   <aside className={'inspector '+(mobilePanel==='inspect'?'mobile-open':'')} aria-label="检查器"><div className="inspector-head"><span>{entity?'对象属性':'镜头设置'}</span>{entity?<Button icon="close" aria-label="取消选择对象" onClick={()=>setSelection(null)}/>:<Icon name="camera"/>}</div><div className="panel-scroll">{entity&&sampled?<><div className="selected-object"><span className="object-emblem" style={{color:entity.color}}><Icon name="cube" size={28}/></span><div><strong>{entity.name}</strong><small>{entity.kind.toUpperCase()} / 场内对象</small></div></div><Field label="对象名称" value={entity.name} onCommit={name=>void command([{type:'entity.update',id:entity.id,changes:{name}}],'命名对象')}/><label className="field"><span>替换主体，保留镜头关系</span><select aria-label="替换对象类型" disabled={busy} value={entity.kind} onChange={e=>{if(e.target.value==='glb'){replaceModelRef.current?.click();return;}void command([{type:'entity.update',id:entity.id,changes:{kind:e.target.value as Entity['kind'],asset:null}}],'替换主体');}}>{props.map(p=><option key={p.kind} value={p.kind}>{p.name}</option>)}<option value="glb">导入 GLB 模型…</option></select></label>{entity.kind==='glb'&&<Button className="wide" icon="upload" onClick={()=>replaceModelRef.current?.click()}>替换模型文件</Button>}<div className="object-actions"><Button icon="copy" onClick={duplicate} disabled={busy}>复制</Button><Button icon={entity.locked?'lock':'unlock'} active={entity.locked} disabled={busy} onClick={()=>void command([{type:'entity.update',id:entity.id,changes:{locked:!entity.locked}}],'锁定状态')}>{entity.locked?'已锁定':'锁定'}</Button><Button icon="trash" aria-label="删除对象" disabled={busy} onClick={()=>void command([{type:'entity.remove',id:entity.id}],'删除对象')}/></div><div className="section-heading"><span>空间变换</span><span>{time>0||selectedKeys.length?'镜头关键帧':'基础姿态'}</span></div><Vector label="位置" value={sampled.transform.position} disabled={entity.locked||busy} onCommit={position=>setTransform({position})}/><Vector label="旋转 °" value={[rotation!.x*180/Math.PI,rotation!.y*180/Math.PI,rotation!.z*180/Math.PI]} disabled={entity.locked||busy} onCommit={v=>setTransform({rotation:new Quaternion().setFromEuler(new Euler(...v.map(x=>x*Math.PI/180) as [number,number,number],'XYZ')).toArray()})}/><Vector label="缩放" value={sampled.transform.scale} disabled={entity.locked||busy} onCommit={scale=>setTransform({scale})}/><label className="color-field"><span>主体颜色</span><input type="color" aria-label="主体颜色" value={entity.color} disabled={busy} onChange={e=>void command([{type:'entity.update',id:entity.id,changes:{color:e.target.value}}],'修改颜色')}/><code>{entity.color.toUpperCase()}</code></label><p className="helper">{entity.locked?'对象已锁定，解锁后可调整姿态。':time>0||selectedKeys.length?'此时修改姿态会写入当前镜头关键帧。':'零秒且没有轨道时，修改共享的基础姿态。'}</p><div className="section-heading"><span>当前镜头动作</span><span>{selectedKeys.length} 个关键帧</span></div><Button className="wide" icon="key" disabled={entity.locked||busy} onClick={()=>{const ops:Operation[]=[];if(time>0&&!selectedKeys.length)ops.push({type:'key.set',shotId:shot.id,entityId:entity.id,key:{...entity.transform,time:0}});ops.push({type:'key.set',shotId:shot.id,entityId:entity.id,key:{...sampled.transform,time:Math.min(shot.duration,Math.round(time*Number(project.fps))/Number(project.fps))}});void command(ops,'设置关键帧');}}>在 {time.toFixed(2)} 秒设关键帧</Button><div className="key-list">{selectedKeys.map(k=><div key={k.time}><button onClick={()=>{setTime(k.time);setPlaying(false);}}><Icon name="key" size={12}/>{k.time.toFixed(2)}s</button><Button icon="trash" aria-label={`删除 ${k.time} 秒关键帧`} onClick={()=>void command([{type:'key.remove',shotId:shot.id,entityId:entity.id,time:k.time}],'删除关键帧')}/></div>)}</div>{entity.kind==='glb'&&<><Field label="资产来源" value={entity.source??''} onCommit={source=>void command([{type:'entity.update',id:entity.id,changes:{source}}],'填写资产来源')}/><Field label="资产许可" value={entity.license??''} onCommit={license=>void command([{type:'entity.update',id:entity.id,changes:{license}}],'填写资产许可')}/><p className="helper">来源：{entity.source||'未填写'}<br/>许可：{entity.license||'未声明，请确认使用权限'}<br/>保留模型原始材质。</p></>}</>:<><div className="shot-number">SHOT <strong>{pad(project.shots.findIndex(s=>s.id===shot.id)+1)}</strong><span>{shot.duration.toFixed(1)} SEC</span></div><Field label="镜头名称" value={shot.name} onCommit={name=>editShot({name})}/><div className="field-pair"><Field label="时长 / 秒" value={shot.duration} type="number" min={.5} max={30} step={.5} onCommit={v=>editShot({duration:Number(v)})}/><Field label="视角 / FOV" value={shot.camera.fov} type="number" min={10} max={100} onCommit={v=>editShot({camera:{...shot.camera,fov:Number(v)}})}/></div><label className="field"><span>跟随主体</span><select aria-label="跟随主体" value={shot.camera.follow??''} onChange={e=>editShot({camera:{...shot.camera,follow:e.target.value||null}})}><option value="">固定观察目标</option>{project.entities.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select></label><div className="section-heading"><span>摄影机路径</span><span>米 / XYZ</span></div><Vector label="起点" value={shot.camera.from} onCommit={from=>editShot({camera:{...shot.camera,from}})}/><Vector label="终点" value={shot.camera.to} onCommit={to=>editShot({camera:{...shot.camera,to}})}/>{!shot.camera.follow&&<><Vector label="起始目标" value={shot.camera.target} onCommit={target=>editShot({camera:{...shot.camera,target}})}/><Vector label="结束目标" value={shot.camera.targetEnd} onCommit={targetEnd=>editShot({camera:{...shot.camera,targetEnd}})}/></>}<Field label="拍摄意图" value={shot.intent} onCommit={intent=>editShot({intent})}/><p className="helper">在自由布置中找到构图，点击画面里的「将此视角设为镜头起点」。</p><Button className="wide subtle-danger" icon="trash" disabled={project.shots.length<=1||busy} onClick={()=>void command([{type:'shot.remove',id:shot.id}],'删除镜头')}>删除此镜头</Button></>}</div><div className="inspector-footer"><span className="live-dot"/> 所有修改写入同一工程</div></aside>
-  </div>
-  <section className="timeline" aria-label="镜头时间轴"><div className="timeline-top"><div className="timeline-title"><Icon name="film"/><strong>镜头序列</strong><span>{project.shots.length} 镜头 · {total.toFixed(1)} 秒</span></div><div className="transport"><Button icon={playing?'pause':'play'} aria-label={playing?'暂停播放':'播放镜头'} className="play-button" onClick={()=>{if(time>=shot.duration)setTime(0);setPlaying(!playing);}}/><code>{clock(time,project.fps)}</code><span>/ {clock(shot.duration,project.fps)}</span></div><Button icon="plus" onClick={()=>setModal('recipes')}>添加镜头</Button></div><div className="timeline-content"><div className="shot-strip">{project.shots.map((s,i)=><button key={s.id} className={'shot-card '+(s.id===shot.id?'selected':'')} onClick={()=>{selectShot(s.id);setSelection(null);}}><div className={'shot-art art-'+project.environment+(thumbnails[s.id]?' has-thumbnail':'')}>{thumbnails[s.id]?<img src={thumbnails[s.id]} alt={`${s.name} 起始帧`} draggable={false}/>:<Icon name="camera" size={25}/>}<span>{pad(i+1)}</span><small>{s.duration.toFixed(1)}s</small></div><div><strong>{s.name}</strong><span>{s.camera.follow?'跟随镜头':s.camera.from.every((v,j)=>v===s.camera.to[j])?'固定机位':'运动镜头'}</span></div></button>)}<button className="add-shot-card" aria-label="添加镜头配方" onClick={()=>setModal('recipes')}><Icon name="plus" size={22}/><span>下一个镜头</span></button></div><div className="scrubber"><div className="ruler"><span>00:00</span><span>{(shot.duration/4).toFixed(1)}s</span><span>{(shot.duration/2).toFixed(1)}s</span><span>{(shot.duration*3/4).toFixed(1)}s</span><span>{shot.duration.toFixed(1)}s</span></div><div className="seek-track"><div className="seek-progress" style={{width:`${time/shot.duration*100}%`}}/>{selectedKeys.map(k=><button className="key-marker" key={k.time} style={{left:`${k.time/shot.duration*100}%`}} title={`${k.time.toFixed(2)} 秒关键帧`} aria-label={`跳到 ${k.time} 秒关键帧`} onClick={()=>{setTime(k.time);setPlaying(false);}}/>)}<input aria-label="镜头时间" type="range" min={0} max={shot.duration} step={1/Number(project.fps)} value={time} onChange={e=>{setTime(Number(e.target.value));setPlaying(false);}}/></div><div className="timeline-hint"><span>{entity?entity.name+' · 关键帧轨道':'选择一个对象，编排它的动作'}</span><span>{project.fps} FPS · {project.aspect}</span></div></div></div></section>
-  <input ref={fileRef} className="hidden-input" type="file" accept=".json,.zip" aria-label="导入工程文件" onChange={e=>{const f=e.target.files?.[0];if(f)void importProject(f);e.target.value='';}}/><input ref={modelRef} className="hidden-input" type="file" accept=".glb" aria-label="导入 GLB 模型" onChange={e=>{const f=e.target.files?.[0];if(f)void importModel(f);e.target.value='';}}/>
-  <input ref={replaceModelRef} className="hidden-input" type="file" accept=".glb" aria-label="替换 GLB 模型" onChange={e=>{const f=e.target.files?.[0];if(f&&selection)void importModel(f,selection);e.target.value='';}}/>
-  {modal==='project'&&<ModalShell title="工程设置" kicker="PROJECT" onClose={()=>setModal(null)}><Field label="工程名称" value={project.name} onCommit={name=>void command([{type:'project.update',name}],'命名工程')}/><div className="field-pair"><label className="field"><span>画幅</span><select aria-label="画幅" value={project.aspect} onChange={e=>void command([{type:'project.update',aspect:e.target.value as Project['aspect']}],'修改画幅')}><option>16:9</option><option>9:16</option><option>1:1</option></select></label><label className="field"><span>帧率</span><select aria-label="帧率" value={project.fps} onChange={e=>void command([{type:'project.update',fps:e.target.value as Project['fps']}],'修改帧率')}><option>24</option><option>30</option><option>60</option></select></label></div><p className="helper">工程实时保存在本机。JSON 保存可编辑数据；包含模型的完整迁移请导出拍摄包。</p><div className="modal-actions"><Button icon="upload" onClick={()=>fileRef.current?.click()}>导入 JSON / ZIP</Button><Button icon="download" onClick={()=>download('project.hengdian.json',JSON.stringify(project,null,2))}>下载工程 JSON</Button></div></ModalShell>}
-  {modal==='recipes'&&<ModalShell title="下一个镜头，怎样讲？" kicker="SHOT RECIPES" onClose={()=>setModal(null)}><p className="modal-intro">配方给你一个起点。每个位置、目标和时长都可以继续调整。</p><div className="recipe-grid">{recipes.map((r,i)=><button key={r.id} disabled={busy} onClick={()=>{const s=newShot(r.id,entity?.transform.position??[0,0,0]);void command([{type:'shot.add',shot:s}],'添加镜头').then(()=>{if(projectRef.current?.shots.some(x=>x.id===s.id)){selectShot(s.id);setSelection(null);setModal(null);}});}}><span>{pad(i+1)} <Icon name="camera"/></span><strong>{r.name}</strong><small>{r.note}</small><Icon name="plus" size={14}/></button>)}</div></ModalShell>}
-  {modal==='connect'&&<ModalShell title="让 Agent 加入片场" kicker="ONE PROJECT. MANY DIRECTORS." onClose={()=>setModal(null)}><p className="modal-intro">人和 Agent 操作同一份工程。服务通过版本检查保护修改，任何宿主都不拥有第二份场景真源。</p><div className="connection-status"><span className="live-dot"/><span>本地工程服务</span><code>{location.origin}</code></div><h3>通过 MCP 接入</h3><p className="helper">在支持 stdio MCP 的客户端中配置以下启动命令。将路径替换为本机仓库绝对路径，并保持导演台服务运行。</p><pre>{JSON.stringify({command:'npm',args:['--silent','--prefix','/absolute/path/cyber-hengdian','run','mcp','--'],env:{HENGDIAN_URL:location.origin}},null,2)}</pre><h3>也可以直接使用 CLI</h3><pre>npm run cli -- inspect</pre><p className="helper">Codex / DeepSeek Harness 的配置入口各不相同，请参考仓库接入文档。显示此说明不代表已连接或已完成真实宿主测试。视觉输入能力由宿主与模型决定。</p></ModalShell>}
-  {modal==='notes'&&<ModalShell title="把想法留在这一刻" kicker="DIRECTOR’S NOTES" onClose={()=>setModal(null)}><div className="note-context"><Icon name="camera"/>{shot.name}<span>{time.toFixed(2)}s</span>{entity&&<span>{entity.name}</span>}</div><textarea aria-label="批注内容" placeholder="这里停顿一下，让观众先看到主角的反应…" maxLength={2000} value={note} onChange={e=>setNote(e.target.value)}/><Button className="primary wide" icon="plus" disabled={!note.trim()||busy} onClick={()=>void command([{type:'note.add',note:{id:uid(),shotId:shot.id,entityId:selection,time,text:note.trim()}}],'添加批注').then(saved=>{if(saved)setNote('');})}>保存到当前时刻</Button><div className="notes-list">{project.notes.length?project.notes.map(n=><article key={n.id}><header><button onClick={()=>{selectShot(n.shotId);setTime(n.time);setSelection(n.entityId);setModal(null);}}>{project.shots.find(s=>s.id===n.shotId)?.name} · {n.time.toFixed(2)}s</button><Button icon="trash" aria-label="删除批注" onClick={()=>void command([{type:'note.remove',id:n.id}],'删除批注')}/></header><p>{n.text}</p></article>):<p className="empty">批注会带着镜头、对象和时间一起保存。</p>}</div></ModalShell>}
-  {modal==='export'&&<ModalShell title="把这个镜头带走" kicker="PRODUCTION HANDOFF" onClose={()=>setModal(null)}><p className="modal-intro">逐帧渲染当前镜头。拍摄包包含 MP4、关键画面、摄影机数据和可重开的完整工程。</p><div className="export-summary"><Icon name="film" size={26}/><div><strong>{shot.name}</strong><small>{shot.duration.toFixed(1)} 秒 · {project.fps} FPS · {project.aspect} · r{project.revision}</small></div></div><label className="field"><span>画面长边</span><select aria-label="导出分辨率" value={exportSize} onChange={e=>setExportSize(Number(e.target.value) as 640|1280)}><option value={1280}>1280 px · 制作参考</option><option value={640}>640 px · 快速检查</option></select></label><label className="checkbox-field"><input type="checkbox" checked={controls} onChange={e=>setControls(e.target.checked)}/><span>附加深度和对象 ID 序列<small>用于明确支持这些输入的工作流，会增加体积与耗时。</small></span></label><Button className="primary wide" icon="download" disabled={busy||jobs.some(j=>j.status==='running'||j.status==='queued')} onClick={async()=>{setError('');try{const j=await api<Job>('exports',{baseRevision:project.revision,shotId:shot.id,size:exportSize,controls});setJobs(old=>[j,...old]);}catch(e){setError(String(e));}}}>开始导出拍摄包</Button><p className="helper">需要本机 Chrome / Chromium 和 FFmpeg。导出使用开始时的工程快照，期间可以继续编辑。</p><div className="export-jobs">{jobs.map(j=><article key={j.id}><div><strong>{project.shots.find(s=>s.id===j.shotId)?.name??'历史镜头'}</strong><span>{({queued:'排队中',running:'逐帧渲染中',complete:'已完成',failed:'导出失败',cancelled:'已取消'} as const)[j.status]} · r{j.revision}</span></div>{(j.status==='running'||j.status==='queued')&&<><progress aria-label="导出进度" max={100} value={j.progress}/><Button onClick={async()=>{try{await api(`exports/${j.id}/cancel`,{});setJobs(await api<Job[]>('exports'));}catch(e){setError(String(e));}}}>取消</Button></>}{j.status==='complete'&&<a className="download-link" href={`/api/exports/${j.id}/download`}><Icon name="download"/> 下载 ZIP</a>}{j.error&&<p className="job-error">{j.error}</p>}</article>)}</div></ModalShell>}
- </main>;
+import { Button } from './components/Controls';
+import { LibraryPanel } from './components/LibraryPanel';
+import { InspectorPanel } from './components/InspectorPanel';
+import { Timeline } from './components/Timeline';
+import { AppDialogs } from './components/AppDialogs';
+import type { History, PackInfo, Job, Modal } from './types';
+export function App() {
+  const [project, setProject] = useState<Project | null>(null),
+    projectRef = useRef<Project | null>(null);
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+  const [shotId, setShotId] = useState(''),
+    [selection, setSelection] = useState<string | null>(null),
+    [time, setTime] = useState(0),
+    [playing, setPlaying] = useState(false);
+  const [mode, setMode] = useState<'stage' | 'camera'>('camera'),
+    [tool, setTool] = useState<'translate' | 'rotate' | 'scale'>('translate');
+  const [tab, setTab] = useState<'assets' | 'objects'>('assets'),
+    [mobilePanel, setMobilePanel] = useState<'assets' | 'inspect' | null>(null);
+  const [modal, setModal] = useState<Modal>(null),
+    [error, setError] = useState(''),
+    [status, setStatus] = useState('正在连接'),
+    [busy, setBusy] = useState(false),
+    [history, setHistory] = useState<History>({ canUndo: false, canRedo: false });
+  const [installedPacks, setInstalledPacks] = useState<PackInfo[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]),
+    [exportSize, setExportSize] = useState<640 | 1280>(1280),
+    [controls, setControls] = useState(false),
+    [note, setNote] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null),
+    modelRef = useRef<HTMLInputElement>(null),
+    replaceModelRef = useRef<HTMLInputElement>(null);
+  const accept = useCallback((p: Project) => {
+    if (projectRef.current && p.revision < projectRef.current.revision) return;
+    projectRef.current = p;
+    setProject(p);
+    setShotId((id) => (p.shots.some((s) => s.id === id) ? id : p.shots[0].id));
+    setSelection((id) => (p.entities.some((e) => e.id === id) ? id : null));
+    setStatus('已保存到本地');
+    void api<History>('history')
+      .then(setHistory)
+      .catch(() => {});
+    void api<PackInfo[]>('packs')
+      .then((p) => setInstalledPacks(p.filter((x) => !x.builtin)))
+      .catch(() => {});
+  }, []);
+  const refresh = useCallback(async () => {
+    accept(await api<Project>('project'));
+  }, [accept]);
+  useEffect(() => {
+    void refresh().catch((e) => {
+      setError(e.message);
+      setStatus('连接失败');
+    });
+    const events = new EventSource('/api/events');
+    events.onmessage = () =>
+      void refresh().catch((e) => {
+        setStatus('同步中断');
+        setError(e.message);
+      });
+    events.onerror = () => setStatus('连接中断 · 正在重连');
+    events.onopen = () => setStatus('已连接本地服务');
+    return () => events.close();
+  }, [refresh]);
+  const perform = async (action: () => Promise<Project>) => {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    setStatus('正在保存…');
+    try {
+      accept(await action());
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setStatus('修改未保存');
+      try {
+        await refresh();
+      } catch {
+        /* keep the actionable original error */
+      }
+      setStatus('修改未应用');
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  };
+  const command = (
+    operations: Operation[],
+    label: string,
+    revision = projectRef.current!.revision,
+  ) =>
+    perform(() =>
+      api<Project>('commands', { requestId: uid(), baseRevision: revision, label, operations }),
+    );
+  const shot = project?.shots.find((s) => s.id === shotId) ?? project?.shots[0];
+  const entity = project?.entities.find((e) => e.id === selection);
+  const sampled =
+    project && shot
+      ? evaluate(project, shot, time).entities.find((e) => e.id === selection)
+      : undefined;
+  useEffect(() => {
+    if (shot) setTime((t) => Math.min(t, shot.duration));
+  }, [shot?.duration, shotId]);
+  useEffect(() => {
+    if (!playing || !shot) return;
+    let frame = 0,
+      previous = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - previous) / 1000;
+      previous = now;
+      setTime((t) => {
+        const next = t + dt;
+        if (next >= shot.duration) {
+          setPlaying(false);
+          return shot.duration;
+        }
+        return next;
+      });
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [playing, shot?.id, shot?.duration]);
+  useEffect(() => {
+    if (modal !== 'export') return;
+    const poll = () =>
+      void api<Job[]>('exports')
+        .then(setJobs)
+        .catch((e) => setError(e.message));
+    poll();
+    const timer = setInterval(poll, 1200);
+    return () => clearInterval(timer);
+  }, [modal]);
+  const transform = (id: string, t: Transform, revision: number) => {
+    if (!project || !shot) return;
+    const target = project.entities.find((e) => e.id === id);
+    if (!target) return;
+    const hasKeys = !!shot.tracks[id]?.length;
+    const ops: Operation[] = [];
+    if (time > 0 || hasKeys) {
+      if (!hasKeys && time > 0)
+        ops.push({
+          type: 'key.set',
+          shotId: shot.id,
+          entityId: id,
+          key: { ...target.transform, time: 0 },
+        });
+      ops.push({
+        type: 'key.set',
+        shotId: shot.id,
+        entityId: id,
+        key: {
+          ...t,
+          time: Math.min(
+            shot.duration,
+            Math.round(time * Number(project.fps)) / Number(project.fps),
+          ),
+        },
+      });
+    } else ops.push({ type: 'entity.update', id, changes: { transform: t } });
+    void command(ops, '调整 ' + target.name, revision);
+  };
+  const editShot = (changes: Partial<Omit<Shot, 'id' | 'tracks'>>) => {
+    if (shot) void command([{ type: 'shot.update', id: shot.id, changes }], '修改镜头');
+  };
+  const selectShot = (id: string) => {
+    setShotId(id);
+    setTime(0);
+    setPlaying(false);
+  };
+  const addObject = (kind: Entity['kind']) => {
+    const e = newEntity(kind);
+    void command([{ type: 'entity.add', entity: e }], '加入 ' + e.name).then(() => {
+      if (projectRef.current?.entities.some((x) => x.id === e.id)) {
+        setSelection(e.id);
+        setTab('objects');
+        setMode('stage');
+      }
+    });
+  };
+  const duplicate = () => {
+    if (!entity) return;
+    const copy = structuredClone(entity);
+    copy.id = uid();
+    copy.name += ' 副本';
+    copy.locked = false;
+    copy.transform = structuredClone(sampled?.transform ?? entity.transform);
+    copy.transform.position[0] += 0.7;
+    void command([{ type: 'entity.add', entity: copy }], '复制对象').then(() =>
+      setSelection(copy.id),
+    );
+  };
+  const uploadAsset = async (bytes: Uint8Array | File) => {
+    const res = await fetch('/api/assets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'model/gltf-binary' },
+      body: bytes instanceof File ? bytes : new Blob([bytes as Uint8Array<ArrayBuffer>]),
+    });
+    const data = await res.json();
+    if (!res.ok) throw Error(data.error || '模型上传失败');
+    return data.asset as string;
+  };
+  const importProject = async (file: File) => {
+    if (
+      !project ||
+      !window.confirm('导入会替换当前工程。已有修改已保存，导入后可用撤销恢复。继续导入？')
+    )
+      return;
+    const revision = project.revision;
+    await perform(async () => {
+      let p: Project;
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        const files = unzipSync(new Uint8Array(await file.arrayBuffer()));
+        const json = files['project.hengdian.json'];
+        if (!json) throw Error('工程包中缺少 project.hengdian.json');
+        p = projectSchema.parse(JSON.parse(strFromU8(json)));
+        for (const asset of new Set(p.entities.map((e) => e.asset).filter(Boolean))) {
+          const bytes = files['assets/' + asset];
+          if (!bytes) throw Error('工程包缺少模型：' + asset);
+          if ((await uploadAsset(bytes)) !== asset) throw Error('模型内容与工程引用不一致');
+        }
+      } else {
+        const parsed = JSON.parse(await file.text());
+        if (parsed.schemaVersion === 'hengdian-pack/1') {
+          const installed = await api<{ id: string; version: string }>('packs', { pack: parsed });
+          return api<Project>(`packs/${encodeURIComponent(installed.id)}/instantiate`, {
+            baseRevision: revision,
+            version: installed.version,
+          });
+        }
+        p = projectSchema.parse(parsed);
+      }
+      return api<Project>('import', { project: p, baseRevision: revision });
+    });
+    setTime(0);
+    setPlaying(false);
+  };
+  const importModel = async (file: File, replaceId?: string) => {
+    if (!project) return;
+    const revision = project.revision;
+    await perform(async () => {
+      const asset = await uploadAsset(file);
+      const e: Entity = {
+        ...newEntity('glb'),
+        name: file.name.replace(/\.glb$/i, '').slice(0, 160) || '导入模型',
+        asset,
+        source: file.name,
+      };
+      const result = await api<Project>('commands', {
+        requestId: uid(),
+        baseRevision: revision,
+        label: '导入模型',
+        operations: [
+          replaceId
+            ? {
+                type: 'entity.update',
+                id: replaceId,
+                changes: { kind: 'glb', asset, source: file.name, license: '' },
+              }
+            : { type: 'entity.add', entity: e },
+        ],
+      });
+      setSelection(replaceId ?? e.id);
+      setTab('objects');
+      setMode('stage');
+      return result;
+    });
+  };
+  if (!project || !shot)
+    return (
+      <main className="boot">
+        <div className="brand-mark">H</div>
+        <h1>赛博横店</h1>
+        <p>{error || '准备你的下一场拍摄…'}</p>
+        {error && (
+          <Button icon="rotate" onClick={() => void refresh().catch((e) => setError(e.message))}>
+            重新连接
+          </Button>
+        )}
+      </main>
+    );
+  const selectedKeys = selection ? (shot.tracks[selection] ?? []) : [];
+  const setTransform = (change: Partial<Transform>) => {
+    if (sampled) transform(sampled.id, { ...sampled.transform, ...change }, project.revision);
+  };
+  const currentPack = packs.find((p) => p.id === project.environment)!;
+  return (
+    <main className="workspace">
+      <header className="topbar">
+        <a className="brand" href="/" aria-label="赛博横店首页">
+          <span className="brand-mark">H</span>
+          <span>
+            赛博横店<small>CYBER HENGDIAN</small>
+          </span>
+        </a>
+        <span className="top-divider" />
+        <button className="project-title" onClick={() => setModal('project')}>
+          <span>{project.name}</span>
+          <small>
+            本地工程 <span>⌄</span>
+          </small>
+        </button>
+        <div className="save-state" aria-live="polite">
+          <span className={busy ? 'saving-dot' : 'live-dot'} />
+          {status}
+          <span className="revision">r{project.revision}</span>
+        </div>
+        <nav className="top-actions">
+          <Button
+            icon="undo"
+            aria-label="撤销"
+            title="撤销"
+            disabled={!history.canUndo || busy}
+            onClick={() =>
+              void perform(() => api<Project>('history/undo', { baseRevision: project.revision }))
+            }
+          />
+          <Button
+            icon="redo"
+            aria-label="重做"
+            title="重做"
+            disabled={!history.canRedo || busy}
+            onClick={() =>
+              void perform(() => api<Project>('history/redo', { baseRevision: project.revision }))
+            }
+          />
+          <span className="top-divider" />
+          <Button icon="link" onClick={() => setModal('connect')}>
+            <span className="hide-small">连接 Agent</span>
+          </Button>
+          <Button className="primary" icon="download" onClick={() => setModal('export')}>
+            导出<span className="hide-small">拍摄包</span>
+          </Button>
+        </nav>
+      </header>
+      {error && (
+        <div className="error-banner" role="alert">
+          <span>{error}</span>
+          <Button icon="close" aria-label="关闭错误提示" onClick={() => setError('')} />
+        </div>
+      )}
+      <div className="mobile-tabs">
+        <Button
+          icon="layers"
+          active={mobilePanel === 'assets'}
+          onClick={() => setMobilePanel(mobilePanel === 'assets' ? null : 'assets')}
+        >
+          资源
+        </Button>
+        <span>导演工作台</span>
+        <Button
+          icon="move"
+          active={mobilePanel === 'inspect'}
+          onClick={() => setMobilePanel(mobilePanel === 'inspect' ? null : 'inspect')}
+        >
+          检查器
+        </Button>
+      </div>
+      <div className="workbody">
+        <LibraryPanel
+          {...{
+            project,
+            mobilePanel,
+            tab,
+            setTab,
+            currentPack,
+            installedPacks,
+            busy,
+            perform,
+            setTime,
+            setPlaying,
+            addObject,
+            modelRef,
+            fileRef,
+            selection,
+            setSelection,
+            setMobilePanel,
+          }}
+        />{' '}
+        <section className="stage-area" aria-label="导演画面">
+          <div className="stage-toolbar">
+            <div className="segmented">
+              <Button icon="camera" active={mode === 'camera'} onClick={() => setMode('camera')}>
+                摄影机
+              </Button>
+              <Button icon="cube" active={mode === 'stage'} onClick={() => setMode('stage')}>
+                自由布置
+              </Button>
+            </div>
+            <div className="stage-toolset">
+              {(['translate', 'rotate', 'scale'] as const).map((t, i) => (
+                <Button
+                  key={t}
+                  icon={(['move', 'rotate', 'scale'] as const)[i]}
+                  active={mode === 'stage' && tool === t}
+                  title={['移动', '旋转', '缩放'][i]}
+                  aria-label={['移动对象', '旋转对象', '缩放对象'][i]}
+                  onClick={() => {
+                    setTool(t);
+                    setMode('stage');
+                  }}
+                />
+              ))}
+            </div>
+            <Button className="notes-button" icon="note" onClick={() => setModal('notes')}>
+              批注 <span>{project.notes.length}</span>
+            </Button>
+          </div>
+          <Viewport
+            onThumbnails={(images, revision) => {
+              if (revision === projectRef.current?.revision) setThumbnails(images);
+            }}
+            project={project}
+            shot={shot}
+            time={time}
+            selection={selection}
+            mode={mode}
+            tool={tool}
+            onSelect={(id) => {
+              setSelection(id);
+              if (id) setTab('objects');
+            }}
+            onTransform={transform}
+            onCapture={(position, target) =>
+              editShot({ camera: { ...shot.camera, from: position, target } })
+            }
+          />
+          <div className="stage-caption">
+            <span>
+              <i /> {currentPack.name} <span className="muted">/</span> {shot.name}
+            </span>
+            <span>{selection ? `已选择 ${entity?.name ?? ''}` : '先选对象，再编排动作'}</span>
+          </div>
+        </section>
+        <InspectorPanel
+          {...{
+            project,
+            shot,
+            entity,
+            sampled,
+            mobilePanel,
+            setSelection,
+            command,
+            replaceModelRef,
+            busy,
+            duplicate,
+            time,
+            selectedKeys,
+            setTransform,
+            setTime,
+            setPlaying,
+            editShot,
+          }}
+        />
+      </div>
+      <Timeline
+        {...{
+          project,
+          shot,
+          entity,
+          time,
+          playing,
+          setPlaying,
+          setTime,
+          setModal,
+          selectShot,
+          setSelection,
+          selectedKeys,
+          thumbnails,
+        }}
+      />
+      <input
+        ref={fileRef}
+        className="hidden-input"
+        type="file"
+        accept=".json,.zip"
+        aria-label="导入工程文件"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void importProject(f);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={modelRef}
+        className="hidden-input"
+        type="file"
+        accept=".glb"
+        aria-label="导入 GLB 模型"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void importModel(f);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={replaceModelRef}
+        className="hidden-input"
+        type="file"
+        accept=".glb"
+        aria-label="替换 GLB 模型"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f && selection) void importModel(f, selection);
+          e.target.value = '';
+        }}
+      />
+      <AppDialogs
+        {...{
+          modal,
+          setModal,
+          project,
+          shot,
+          entity,
+          time,
+          selection,
+          command,
+          fileRef,
+          busy,
+          projectRef,
+          selectShot,
+          setSelection,
+          setTime,
+          note,
+          setNote,
+          exportSize,
+          setExportSize,
+          controls,
+          setControls,
+          jobs,
+          setJobs,
+          setError,
+        }}
+      />{' '}
+    </main>
+  );
 }

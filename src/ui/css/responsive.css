@@ -1,0 +1,476 @@
+@media (min-width: 1500px) {
+  .workbody {
+    grid-template-columns: 236px minmax(0, 1fr) 280px;
+  }
+  .mode-camera .canvas-wrap {
+    max-width: calc((100vh - 415px) * 1.777);
+  }
+}
+@media (max-width: 1150px) {
+  .workbody {
+    grid-template-columns: 190px minmax(0, 1fr) 235px;
+  }
+  .topbar {
+    gap: 14px;
+    padding: 0 15px;
+  }
+  .save-state {
+    font-size: 9px;
+  }
+  .revision {
+    display: none;
+  }
+  .panel-scroll {
+    padding: 12px;
+  }
+  .inspector .panel-scroll {
+    padding: 14px;
+  }
+  .pack-art {
+    width: 49px;
+  }
+  .pack-copy {
+    padding-left: 7px;
+  }
+  .pack-copy small {
+    font-size: 7px;
+  }
+  .prop-grid button {
+    font-size: 9px;
+    padding: 8px 5px;
+    gap: 5px;
+  }
+  .stage-toolbar {
+    padding: 0 9px;
+    gap: 7px;
+  }
+  .stage-toolset {
+    gap: 0;
+  }
+  .stage-caption > span:last-child {
+    display: none;
+  }
+  .mode-camera .canvas-wrap {
+    width: calc(100% - 30px);
+  }
+  .brand {
+    font-size: 15px;
+    gap: 9px;
+    letter-spacing: 1.5px;
+  }
+  .top-actions > .primary {
+    padding: 9px 10px;
+    margin-left: 4px;
+  }
+}
+@media (max-width: 960px) {
+  .save-state {
+    display: none;
+  }
+  .top-actions {
+    margin-left: auto;
+  }
+  .workbody {
+    grid-template-columns: 170px minmax(0, 1fr) 210px;
+  }
+  .panel-tabs {
+    gap: 10px;
+    padding: 0 11px;
+  }
+  .panel-tabs button {
+    font-size: 10px;
+  }
+  .pack-art {
+    width: 39px;
+  }
+  .pack-copy strong {
+    font-size: 10px;
+  }
+  .pack-copy small {
+    font-size: 6.5px;
+  }
+  .pack-card {
+    min-height: 59px;
+  }
+  .pack-art {
+    height: 61px;
+  }
+  .pack-card > svg {
+    display: none;
+  }
+  .notes-button {
+    font-size: 0;
+    gap: 0;
+  }
+  .notes-button span {
+    display: none;
+  }
+  .stage-toolset button {
+    padding: 4px;
+  }
+  .segmented > button {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+  .timeline {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .mode-camera .canvas-wrap {
+    max-width: 100%;
+  }
+  .prop-grid {
+    gap: 5px;
+  }
+  .prop-glyph svg {
+    width: 17px;
+    height: 17px;
+  }
+  .library-footnote {
+    margin-top: 18px;
+  }
+  .inspector-footer {
+    font-size: 7px;
+  }
+  .vector input {
+    padding-left: 16px;
+    font-size: 9px;
+  }
+  .vector .field > span {
+    left: 5px;
+  }
+  .field-pair {
+    gap: 6px;
+  }
+  .timeline-title > span {
+    display: none;
+  }
+}
+@media (max-width: 780px) {
+  .workspace {
+    min-height: 520px;
+  }
+  .topbar {
+    height: 60px;
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .topbar > .top-divider {
+    display: none;
+  }
+  .brand {
+    font-size: 14px;
+  }
+  .brand small {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+  .brand-mark {
+    width: 27px;
+    height: 27px;
+    line-height: 25px;
+    font-size: 22px;
+  }
+  .project-title {
+    min-width: 0;
+    max-width: 140px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .project-title > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .top-actions {
+    gap: 0;
+  }
+  .top-actions .top-divider {
+    margin: 0 3px;
+  }
+  .top-actions button {
+    padding: 6px;
+    gap: 5px;
+  }
+  .top-actions > .primary {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+  .hide-small {
+    display: none;
+  }
+  .mobile-tabs {
+    height: 35px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #262d20;
+    border-bottom: 1px solid #455338;
+    padding: 0 10px;
+  }
+  .mobile-tabs button {
+    min-height: 27px;
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+  .mobile-tabs > span {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #9cae88;
+  }
+  .workbody {
+    display: block;
+    position: relative;
+  }
+  .stage-area {
+    height: 100%;
+    width: 100%;
+  }
+  .library,
+  .inspector {
+    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 240px;
+    z-index: 15;
+    box-shadow: 0 15px 40px #0008;
+  }
+  .library {
+    left: 0;
+  }
+  .inspector {
+    right: 0;
+  }
+  .library.mobile-open,
+  .inspector.mobile-open {
+    display: flex;
+  }
+  .pack-art {
+    width: 65px;
+  }
+  .pack-copy strong {
+    font-size: 11px;
+  }
+  .pack-copy small {
+    font-size: 9px;
+  }
+  .prop-grid button {
+    font-size: 11px;
+  }
+  .stage-toolbar {
+    height: 42px;
+    padding: 0 13px;
+    gap: 15px;
+  }
+  .segmented > button {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+  .stage-toolset button {
+    padding: 5px;
+  }
+  .notes-button {
+    font-size: 10px;
+    gap: 6px;
+  }
+  .notes-button span {
+    display: inline;
+  }
+  .mode-camera .canvas-wrap {
+    width: calc(100% - 44px);
+    max-height: calc(100% - 60px);
+  }
+  .viewport-label {
+    top: 12px;
+    left: 18px;
+  }
+  .viewport-meta {
+    bottom: 10px;
+    left: 18px;
+  }
+  .timeline {
+    height: 195px;
+    padding: 0 13px 8px;
+  }
+  .timeline-top {
+    height: 43px;
+  }
+  .shot-card {
+    height: 62px;
+    min-width: 160px;
+  }
+  .shot-art {
+    width: 70px;
+  }
+  .add-shot-card {
+    height: 62px;
+  }
+  .timeline-title {
+    font-size: 10px;
+    gap: 6px;
+  }
+  .timeline-title svg {
+    width: 14px;
+  }
+  .transport {
+    gap: 6px;
+    font-size: 9px;
+  }
+  .transport > span {
+    font-size: 8px;
+  }
+  .timeline-top > button {
+    font-size: 9px;
+    padding: 5px 7px;
+  }
+  .stage-caption {
+    font-size: 8px;
+    height: 26px;
+  }
+  .modal-backdrop {
+    padding: 15px;
+  }
+  .modal {
+    padding: 22px;
+  }
+  .recipe-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .recipe-grid button {
+    padding: 12px 9px;
+  }
+  .recipe-grid small {
+    font-size: 8px;
+  }
+  .connection-status {
+    flex-wrap: wrap;
+  }
+  .connection-status code {
+    margin-left: 0;
+  }
+  .capture-view {
+    font-size: 8px;
+    bottom: 11px;
+    right: 12px;
+  }
+  .vector input {
+    font-size: 10px;
+  }
+}
+@media (max-width: 470px) {
+  .topbar {
+    padding: 0 11px;
+    gap: 10px;
+  }
+  .brand > span:last-child {
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+  .brand small {
+    font-size: 5px;
+  }
+  .project-title {
+    max-width: 93px;
+    font-size: 10px;
+  }
+  .project-title small {
+    font-size: 8px;
+  }
+  .top-actions > button:first-child,
+  .top-actions > button:nth-child(2) {
+    display: none;
+  }
+  .top-actions .top-divider {
+    display: none;
+  }
+  .top-actions > .primary {
+    padding: 8px;
+    font-size: 9px;
+  }
+  .top-actions > .primary > svg {
+    width: 13px;
+  }
+  .brand {
+    gap: 7px;
+  }
+  .top-actions > button:nth-last-child(2) {
+    padding: 5px;
+  }
+  .stage-toolbar {
+    gap: 10px;
+    padding: 0 10px;
+  }
+  .stage-toolset button {
+    padding: 4px;
+  }
+  .notes-button {
+    font-size: 0;
+  }
+  .notes-button > span {
+    display: none;
+  }
+  .timeline-title strong {
+    font-size: 9px;
+  }
+  .timeline-title > svg {
+    display: none;
+  }
+  .timeline-top {
+    gap: 5px;
+  }
+  .transport {
+    gap: 4px;
+  }
+  .timeline-top > button {
+    font-size: 8px;
+    padding: 5px;
+  }
+  .timeline-top > button svg {
+    width: 12px;
+  }
+  .transport > span {
+    display: none;
+  }
+  .mode-camera .canvas-wrap {
+    width: calc(100% - 34px);
+  }
+  .recipe-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .modal {
+    padding: 20px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .capture-view {
+    bottom: 33px;
+  }
+  .stage-caption {
+    padding: 0 12px;
+  }
+  .viewport-meta {
+    font-size: 7px;
+    gap: 5px;
+  }
+  .viewport-label {
+    font-size: 8px;
+  }
+  .timeline-hint {
+    font-size: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

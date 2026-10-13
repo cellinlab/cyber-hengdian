@@ -35,59 +35,150 @@ function options(args: string[], allowed: string[]): Record<string, string | boo
     const key = args.shift()!;
     if (!allowed.includes(key) || key in out) throw Error(`Unknown or duplicate option: ${key}`);
     if (key === '--controls') out[key] = true;
-    else { const value = args.shift(); if (!value || value.startsWith('--')) throw Error(`Missing value for ${key}`); out[key] = value; }
+    else {
+      const value = args.shift();
+      if (!value || value.startsWith('--')) throw Error(`Missing value for ${key}`);
+      out[key] = value;
+    }
   }
   return out;
 }
 function revision(value: string | boolean | undefined): number {
-  if (typeof value !== 'string' || !/^\d+$/.test(value) || !Number.isSafeInteger(Number(value))) throw Error('--base-revision must be an explicit nonnegative integer');
+  if (typeof value !== 'string' || !/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)))
+    throw Error('--base-revision must be an explicit nonnegative integer');
   return Number(value);
 }
-function required(value: string | undefined, name: string): string { if (!value || value.startsWith('--')) throw Error(`Missing ${name}`); return value; }
+function required(value: string | undefined, name: string): string {
+  if (!value || value.startsWith('--')) throw Error(`Missing ${name}`);
+  return value;
+}
 async function main() {
   const [command, ...args] = process.argv.slice(2);
-  if (command === '--help' || command === 'help' || !command) { process.stdout.write(help); return; }
+  if (command === '--help' || command === 'help' || !command) {
+    process.stdout.write(help);
+    return;
+  }
   let result: unknown;
   switch (command) {
-    case 'status': case 'inspect': case 'catalog': case 'schema': case 'jobs': {
+    case 'status':
+    case 'inspect':
+    case 'catalog':
+    case 'schema':
+    case 'jobs': {
       options(args, []);
-      result = await request('/api/' + ({ status: 'inspect', inspect: 'inspect', catalog: 'catalog', schema: 'schema', jobs: 'exports' }[command])); break;
+      result = await request(
+        '/api/' +
+          {
+            status: 'inspect',
+            inspect: 'inspect',
+            catalog: 'catalog',
+            schema: 'schema',
+            jobs: 'exports',
+          }[command],
+      );
+      break;
     }
     case 'project': {
-      const opts = options(args, ['--out']); result = await request('/api/project');
-      if (opts['--out']) { await writeFile(String(opts['--out']), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' }); result = { saved: opts['--out'] }; } break;
+      const opts = options(args, ['--out']);
+      result = await request('/api/project');
+      if (opts['--out']) {
+        await writeFile(String(opts['--out']), JSON.stringify(result, null, 2) + '\n', {
+          flag: 'wx',
+        });
+        result = { saved: opts['--out'] };
+      }
+      break;
     }
     case 'apply': {
-      const file = required(args.shift(), 'transaction file'); options(args, []);
+      const file = required(args.shift(), 'transaction file');
+      options(args, []);
       const tx = transactionSchema.parse(JSON.parse(await readFile(file, 'utf8')));
-      result = await request('/api/commands', tx); break;
+      result = await request('/api/commands', tx);
+      break;
     }
     case 'new': {
       const environment = required(args.shift(), 'pack');
       if (!['courtyard', 'studio', 'exterior'].includes(environment)) throw Error('Unknown pack');
       const opts = options(args, ['--base-revision']);
-      result = await request('/api/new', { environment, baseRevision: revision(opts['--base-revision']) }); break;
+      result = await request('/api/new', {
+        environment,
+        baseRevision: revision(opts['--base-revision']),
+      });
+      break;
     }
-    case 'packs': { options(args, []); result = await request('/api/packs'); break; }
-    case 'install-pack': { const file = required(args.shift(), 'pack file'); options(args, []); result = await request('/api/packs', { pack: JSON.parse(await readFile(file, 'utf8')) }); break; }
-    case 'use-pack': { const id = required(args.shift(), 'pack ID'); const opts = options(args, ['--base-revision', '--version']); if (opts['--version'] && !/^\d+\.\d+\.\d+$/.test(String(opts['--version']))) throw Error('--version must be X.Y.Z'); result = await request('/api/packs/' + encodeURIComponent(id) + '/instantiate', { baseRevision: revision(opts['--base-revision']), version: opts['--version'] }); break; }
+    case 'packs': {
+      options(args, []);
+      result = await request('/api/packs');
+      break;
+    }
+    case 'install-pack': {
+      const file = required(args.shift(), 'pack file');
+      options(args, []);
+      result = await request('/api/packs', { pack: JSON.parse(await readFile(file, 'utf8')) });
+      break;
+    }
+    case 'use-pack': {
+      const id = required(args.shift(), 'pack ID');
+      const opts = options(args, ['--base-revision', '--version']);
+      if (opts['--version'] && !/^\d+\.\d+\.\d+$/.test(String(opts['--version'])))
+        throw Error('--version must be X.Y.Z');
+      result = await request('/api/packs/' + encodeURIComponent(id) + '/instantiate', {
+        baseRevision: revision(opts['--base-revision']),
+        version: opts['--version'],
+      });
+      break;
+    }
     case 'preview': {
       const opts = options(args, ['--shot', '--time', '--out']);
-      const shotId = required(typeof opts['--shot'] === 'string' ? opts['--shot'] : undefined, '--shot');
+      const shotId = required(
+        typeof opts['--shot'] === 'string' ? opts['--shot'] : undefined,
+        '--shot',
+      );
       const out = required(typeof opts['--out'] === 'string' ? opts['--out'] : undefined, '--out');
-      const time = Number(opts['--time'] ?? 0); if (!Number.isFinite(time) || time < 0) throw Error('--time must be nonnegative seconds');
-      const preview = z.object({ revision: z.number(), shotId: z.string(), time: z.number(), width: z.number(), height: z.number(), mimeType: z.literal('image/png'), image: z.string(), camera: z.unknown() }).parse(await request('/api/preview', { shotId, time }, 45000));
+      const time = Number(opts['--time'] ?? 0);
+      if (!Number.isFinite(time) || time < 0) throw Error('--time must be nonnegative seconds');
+      const preview = z
+        .object({
+          revision: z.number(),
+          shotId: z.string(),
+          time: z.number(),
+          width: z.number(),
+          height: z.number(),
+          mimeType: z.literal('image/png'),
+          image: z.string(),
+          camera: z.unknown(),
+        })
+        .parse(await request('/api/preview', { shotId, time }, 45000));
       const { image, ...metadata } = preview;
-      await writeFile(out, Buffer.from(image, 'base64'), { flag: 'wx' }); result = { ...metadata, saved: out }; break;
+      await writeFile(out, Buffer.from(image, 'base64'), { flag: 'wx' });
+      result = { ...metadata, saved: out };
+      break;
     }
     case 'export': {
-      const shotId = required(args.shift(), 'shot ID'); const opts = options(args, ['--base-revision', '--size', '--controls']);
-      const size = Number(opts['--size'] || 1280); if (![640, 1280].includes(size)) throw Error('--size must be 640 or 1280');
-      result = await request('/api/exports', { shotId, baseRevision: revision(opts['--base-revision']), size, controls: !!opts['--controls'] }); break;
+      const shotId = required(args.shift(), 'shot ID');
+      const opts = options(args, ['--base-revision', '--size', '--controls']);
+      const size = Number(opts['--size'] || 1280);
+      if (![640, 1280].includes(size)) throw Error('--size must be 640 or 1280');
+      result = await request('/api/exports', {
+        shotId,
+        baseRevision: revision(opts['--base-revision']),
+        size,
+        controls: !!opts['--controls'],
+      });
+      break;
     }
-    case 'cancel': { const id = required(args.shift(), 'job ID'); options(args, []); result = await request('/api/exports/' + encodeURIComponent(id) + '/cancel', {}); break; }
-    default: throw Error(`Unknown command: ${command}. Use --help.`);
+    case 'cancel': {
+      const id = required(args.shift(), 'job ID');
+      options(args, []);
+      result = await request('/api/exports/' + encodeURIComponent(id) + '/cancel', {});
+      break;
+    }
+    default:
+      throw Error(`Unknown command: ${command}. Use --help.`);
   }
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
 }
-main().catch(error => { process.stderr.write((error instanceof Error ? error.message : String(error)) + '\n'); process.exitCode = 1; });
+main().catch((error) => {
+  process.stderr.write((error instanceof Error ? error.message : String(error)) + '\n');
+  process.exitCode = 1;
+});
